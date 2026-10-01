@@ -1,0 +1,11 @@
+# 대회 규정: 제공 데이터/문제는 외부 저장소 업로드 금지 → 데이터·제출물은 커밋하지 않음
+practice/data/*
+!practice/data/.gitkeep
+practice/outputs/
+*.zip
+*.csv
+*.parquet
+*.pt
+*.onnx
+.ipynb_checkpoints/
+__pycache__/
