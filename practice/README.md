@@ -11,6 +11,7 @@
 | `notebooks/02_timeseries_sensor.ipynb` | 센서/시계열 윈도우 특징, 시간순 검증 |
 | `notebooks/03_image_transfer_yolo.ipynb` | CPU 전이학습(ResNet18 임베딩), YOLO 사용법 |
 | `notebooks/04_text_classification.ipynb` | TF-IDF 텍스트 분류 |
+| `mock_exam/mock_session11.ipynb`, `mock_session12.ipynb` | 공식 종합문제풀이(1)(2)를 90분 3문제 모의고사로 재구성(지문·요구사항·자가 점검 셀, 풀이 코드는 비움) |
 | `common/utils.py` | 인코딩 자동판별 csv 로드, 제출 파일 검증 등 |
 
 ## 데이터 (저장소에 올리지 않음)
@@ -27,3 +28,9 @@
 pip install -r practice/requirements.txt
 # 이미지/YOLO 연습 시: pip install torch torchvision ultralytics
 ```
+
+## 모의고사 사용법
+1. 공식 실습파일의 `session11/`, `session12/` 폴더를 `practice/data/`에 복사합니다(저장소에는 올라가지 않음).
+2. `practice/mock_exam/`에서 노트북을 열고 90분 타이머를 맞춘 뒤, 공식 풀이를 보지 않고 풉니다.
+3. 각 문제 아래 `check(...)` 셀로 결과 파일 형식을 점검하고, 끝나면 공식 풀이와 비교합니다.
+4. 문제 2(YOLO)는 `torch.hub`가 막히면 `ultralytics`(YOLOv8) 방식을 쓰세요.
