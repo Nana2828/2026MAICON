@@ -34,3 +34,7 @@ pip install -r practice/requirements.txt
 2. `practice/mock_exam/`에서 노트북을 열고 90분 타이머를 맞춘 뒤, 공식 풀이를 보지 않고 풉니다.
 3. 각 문제 아래 `check(...)` 셀로 결과 파일 형식을 점검하고, 끝나면 공식 풀이와 비교합니다.
 4. 문제 2(YOLO)는 `torch.hub`가 막히면 `ultralytics`(YOLOv8) 방식을 쓰세요.
+
+## 치트시트 (시험 중 다른 탭에서 참고)
+- `cheatsheet/SUMMARY.md`: 공식 교육 세션 01~10 요약과 시험 대비 포인트
+- `cheatsheet/CHEATSHEET.md`: 세션별 복붙용 코드(전처리, 시계열, 통계, 시각화, 모델링, OpenCV, YOLO, OCR, 영상)
