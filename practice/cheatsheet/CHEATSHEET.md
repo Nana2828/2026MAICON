@@ -5,7 +5,8 @@
 
 > ⚠ **시험 환경은 Python 3.9 + pandas 1.x로 보입니다**(RMSE는 `np.sqrt(mean_squared_error)`, 리샘플링은 `"H"`). `scipy`/`sklearn`이 안 되면 pandas 직접 계산 방식(세션 01·02 코드 참고)을 쓰세요.  
 > ⚠ **컬럼명은 지문과 실제 파일이 다를 수 있습니다** → 항상 `df.columns`로 확인.  
-> ⚠ **임시로 만든 컬럼은 저장 전에 삭제**(문제에서 요구했으면 유지), 저장은 `index=False`, 파일명은 지문과 한 글자도 다르지 않게, 모델은 **분할 후 테스트셋으로 평가**.
+> ⚠ **임시로 만든 컬럼은 저장 전에 삭제**(문제에서 요구했으면 유지), 저장은 `index=False`, 파일명은 지문과 한 글자도 다르지 않게, 모델은 **분할 후 테스트셋으로 평가**.  
+> ⚠ **한글 깨짐**: 읽기는 인코딩 폴백, 저장은 기본 utf-8 + 저장 후 다시 읽어 확인 → [한글·인코딩](#한글인코딩-깨짐-방지)
 
 ## 지문 키워드로 찾기
 
@@ -33,6 +34,7 @@
 | 객체 빈도 / 상위 N개 | `Counter.most_common` | [세션 10 문제 1](#10-1-객체-빈도-통계) |
 | 이미지 속 글자(OCR) | EasyOCR + 정규식 | [세션 10 문제 2](#10-2-이미지-속-글자ocr) |
 | 영상 프레임 | `VideoCapture`, `i % fps == 0` | [세션 10 문제 3](#10-3-드론-영상-프레임-탐지) |
+| 한글이 깨짐 / csv 읽기·저장 | 읽기는 인코딩 폴백, 저장은 기본 utf-8(필요 시 utf-8-sig) | [한글·인코딩](#한글인코딩-깨짐-방지) |
 
 ## 목차
 
@@ -68,6 +70,7 @@
   - [10-2. 이미지 속 글자(OCR)](#10-2-이미지-속-글자ocr)
   - [10-3. 드론 영상 프레임 탐지](#10-3-드론-영상-프레임-탐지)
 - [종합문제 대비 (세션 11·12)](#종합문제-대비-세션-1112)
+- [한글·인코딩 (깨짐 방지)](#한글인코딩-깨짐-방지)
 - [공통 시작 코드](#공통-시작-코드)
 
 ## 함수 빠른 찾기
@@ -1027,6 +1030,45 @@ while True:
 cap.release(); print(len(frames), "프레임 추출")
 # frames 각각에 YOLO 적용 → frame_number,class,x1,y1,x2,y2 저장 → 프레임별 개수 plot
 ```
+
+
+---
+
+## 한글·인코딩 (깨짐 방지)  
+[↑ 목차](#목차)
+
+CSV를 읽고 저장할 때 한글이 깨지는 문제를 막는 규칙입니다. (아래 동작은 실제로 3가지 인코딩으로 저장해 pandas와 파이썬 `csv`로 읽어서 확인했습니다.)
+
+**읽을 때 — 깨지거나 `UnicodeDecodeError`가 나면**
+
+```python
+def read_csv_auto(path, **kw):
+    for enc in ("utf-8", "utf-8-sig", "cp949", "ISO-8859-1"):   # 앞에서부터 시도
+        try:
+            return pd.read_csv(path, encoding=enc, **kw)
+        except UnicodeDecodeError:
+            continue
+    raise ValueError("인코딩 판별 실패")
+```
+- **초기 코드에 `encoding="ISO-8859-1"`처럼 지정돼 있으면 그대로 따른다**(사전 테스트의 미세먼지 데이터가 그랬음).
+- 한글 윈도우 엑셀에서 저장한 csv는 보통 `cp949`.
+
+**저장할 때 — 기본은 그냥 utf-8**
+
+| 저장 방식 | pandas로 읽기 | 파이썬 `csv`/`open`으로 읽기 | 언제 쓰나 |
+|---|---|---|---|
+| `df.to_csv("x.csv", index=False)` (utf-8) | 한글 정상 | 한글 정상 | **제출 파일 기본값(가장 안전)** |
+| `df.to_csv("x.csv", index=False, encoding="utf-8-sig")` | 한글 정상 | 첫 열 이름이 `\ufeff예보 등급`처럼 앞에 BOM이 붙음 | 엑셀에서 열었을 때 한글이 깨질 때, 또는 **제공된 sample 파일이 BOM 형식일 때** |
+| `encoding="cp949"` | 기본 읽기에서 오류 | 오류 | 지문이 요구할 때만 |
+
+- **sample 파일이 있으면 그 형식을 따른다**: `open("sample.csv", "rb").read(3) == b"\xef\xbb\xbf"`가 `True`이면 BOM(utf-8-sig) 파일.
+- `utf-8-sig`는 pandas가 BOM을 자동으로 지워서 안전하지만, pandas가 아닌 방식으로 읽으면 첫 열 이름이 달라질 수 있어서 **필요할 때만** 씁니다.
+- **저장 직후 다시 읽어서 확인**: `pd.read_csv("x.csv").head()` — 열 이름과 한글 값이 그대로인지 봅니다.
+
+**그래프의 한글**
+- 서버에 한글 폰트가 없으면 제목·축 이름이 □로 깨집니다. **제목과 축 이름은 영어로** 쓰는 것이 안전합니다.
+- 마이너스 부호가 깨지면 `plt.rcParams["axes.unicode_minus"] = False`.
+- 한글 폰트가 필요하면(있을 때만): `plt.rcParams["font.family"] = "NanumGothic"` (윈도우는 `"Malgun Gothic"`). 폰트 확인: `from matplotlib import font_manager as fm; [f.name for f in fm.fontManager.ttflist if "Nanum" in f.name or "Malgun" in f.name]`
 
 
 ---
