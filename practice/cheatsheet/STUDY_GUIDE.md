@@ -1,123 +1,51 @@
-# 📚 시험용 통합 치트시트 (세션 01~10, 개념 → 문제 → 함수 → 코드)
+# 📚 세션별 학습 가이드 (개념 → 문제 → 함수 → 코드)
 
-> **수업 PPT 순서 그대로**, 세션마다 ① 개념 → ② 문제별 지문 요점 → ③ PPT '활용 코드 정리' 함수(뜻·언제) → ④ 복붙 코드로 한 군데에 이어 놨습니다.  
-> 시험 중에는 아래 **[지문 키워드로 찾기](#지문-키워드로-찾기)** 또는 **[목차](#목차)**에서 링크를 눌러 해당 문제로 이동하세요. 함수 이름이 생각나면 **[함수 빠른 찾기](#함수-빠른-찾기)**, 그냥 찾으려면 `Ctrl+F`.
+> 수업 PPT 순서 그대로, **세션마다**  
+> ① 개념 → ② 문제별 지문 요점 → ③ PPT '활용 코드 정리' 함수(뜻·언제) → ④ 복붙 코드  
+> 순서로 이어 놨습니다. 시험 중에는 **지문의 번호 [1][2][3]을 보고 해당 세션·문제로 가서 코드를 가져오면** 됩니다.
 
-> ⚠ **시험 환경은 Python 3.9 + pandas 1.x로 보입니다**(RMSE는 `np.sqrt(mean_squared_error)`, 리샘플링은 `"H"`). `scipy`/`sklearn`이 안 되면 pandas 직접 계산 방식(세션 01·02 코드 참고)을 쓰세요.  
-> ⚠ **컬럼명은 지문과 실제 파일이 다를 수 있습니다** → 항상 `df.columns`로 확인.  
-> ⚠ **임시로 만든 컬럼은 저장 전에 삭제**(문제에서 요구했으면 유지), 저장은 `index=False`, 파일명은 지문과 한 글자도 다르지 않게, 모델은 **분할 후 테스트셋으로 평가**.
-
-## 지문 키워드로 찾기
-
-| 지문에 이런 말이 있으면 | 이렇게 한다 | 바로가기 |
-|---|---|---|
-| 빈칸 / 누락 / NaN | `fillna`(평균·중앙값) 또는 `dropna()` | [세션 01 문제 1](#01-1-정비-기록-결측치-처리) |
-| 이상치 제거·탐지 | Z-score(3 초과) 또는 IQR(1.5배) | [세션 01 문제 2](#01-2-건강검진-이상치-제거) |
-| 합쳐라 / 통합 / 병합 | `pd.merge(on=기준열)` | [세션 01 문제 3](#01-3-센서-로그-통합정제) |
-| 정규화(0~1) / 표준화 | MinMaxScaler / StandardScaler | [세션 02 문제 1](#02-1-체력-측정-결과-정규화) |
-| 문자 → 숫자 / 인코딩 | Label(정답열·순서) / One-Hot(순서 없는 입력) | [세션 02 문제 2](#02-2-보직지역-인코딩) |
-| 파일 존재 / 경로 | `os.path.exists` → 필터 | [세션 02 문제 3](#02-3-영상-경로-유효성-검사) |
-| 시간/일/주 단위 집계 | `to_datetime` → 정렬 → `resample` | [세션 03 문제 1](#03-1-센서-로그-시간대별-통계) |
-| JSON | `json.load` → `json_normalize` → `rename` | [세션 03 문제 2](#03-2-보급-기록-json--csv) |
-| 평균·중앙값·표준편차(그룹별) | `agg` / `groupby` | [세션 04 문제 1](#04-1-부대별-통계--장비-사용-분포--설문-요약) |
-| 분포 / 이상치 그래프 | 히스토그램 / 박스플롯 | [세션 05 문제 1](#05-1-분포이상치--산점도상관--상관-heatmap) |
-| 두 변수 관계 / 상관 | 산점도 / `corr` + heatmap | [세션 05 문제 1](#05-1-분포이상치--산점도상관--상관-heatmap) |
-| ~별 평균, 표로 요약 | `groupby().mean()` / `pivot_table` | [세션 06 문제 1](#06-1-관계-해석--그룹-통계--운용-효율) |
-| 정답이 범주(적합·A/B/C) → 분류 | RandomForestClassifier → 정확도·혼동행렬 | [세션 07 문제 1](#07-1-전투-적합도-분류) |
-| 정답이 숫자(수명·점수) → 회귀 | LinearRegression/RandomForestRegressor → RMSE | [세션 07 문제 2](#07-2-장비-수명-예측회귀) |
-| 3개 이상 클래스 | GradientBoostingClassifier + LabelEncoder | [세션 07 문제 3](#07-3-정비-시급성-다중분류) |
-| 비슷한 것끼리 묶기 / 2차원 축소 | KMeans / PCA (먼저 표준화) | [세션 08 문제 1](#08-1-군집화--pca-2차원--근무-유형-군집) |
-| 이미지 크기·흑백·밝기 | `cv2.resize` / `cvtColor` | [세션 09 문제 1](#09-1-이미지-밝기) |
-| 사각형·윤곽 좌표 | Canny → findContours → approxPolyDP | [세션 09 문제 2](#09-2-설계도-사각형-검출) |
-| 사람·차량 탐지(YOLO) | YOLO → 클래스별 집계 | [세션 09 문제 3](#09-3-객체-탐지yolo와-좌표-저장) |
-| 객체 빈도 / 상위 N개 | `Counter.most_common` | [세션 10 문제 1](#10-1-객체-빈도-통계) |
-| 이미지 속 글자(OCR) | EasyOCR + 정규식 | [세션 10 문제 2](#10-2-이미지-속-글자ocr) |
-| 영상 프레임 | `VideoCapture`, `i % fps == 0` | [세션 10 문제 3](#10-3-드론-영상-프레임-탐지) |
+> ⚠ 시험 환경은 Python 3.9 + pandas 1.x로 보입니다(RMSE는 `np.sqrt(mean_squared_error)`, 리샘플링은 `"H"`). 컬럼명은 지문과 실제 파일이 다를 수 있으니 `df.columns`로 확인하세요.
+> ⚠ **임시로 만든 컬럼은 저장 전에 삭제**(문제에서 요구했으면 유지), 저장은 `index=False`, 파일명은 지문과 한 글자도 다르지 않게.
 
 ## 목차
-
-- [세션 01. 결측치·이상치 처리](#세션-01-결측치이상치-처리)  
-  - [01-1. 정비 기록 결측치 처리](#01-1-정비-기록-결측치-처리)
-  - [01-2. 건강검진 이상치 제거](#01-2-건강검진-이상치-제거)
-  - [01-3. 센서 로그 통합·정제](#01-3-센서-로그-통합정제)
-- [세션 02. 정규화·인코딩](#세션-02-정규화인코딩)  
-  - [02-1. 체력 측정 결과 정규화](#02-1-체력-측정-결과-정규화)
-  - [02-2. 보직·지역 인코딩](#02-2-보직지역-인코딩)
-  - [02-3. 영상 경로 유효성 검사](#02-3-영상-경로-유효성-검사)
-- [세션 03. 시계열 정렬·리샘플링 / JSON](#세션-03-시계열-정렬리샘플링--json)  
-  - [03-1. 센서 로그 시간대별 통계](#03-1-센서-로그-시간대별-통계)
-  - [03-2. 보급 기록 JSON → CSV](#03-2-보급-기록-json--csv)
-- [세션 04. 기술통계량](#세션-04-기술통계량)  
-  - [04-1. 부대별 통계 / 장비 사용 분포 / 설문 요약](#04-1-부대별-통계--장비-사용-분포--설문-요약)
-- [세션 05. 데이터 시각화](#세션-05-데이터-시각화)  
-  - [05-1. 분포·이상치 / 산점도·상관 / 상관 heatmap](#05-1-분포이상치--산점도상관--상관-heatmap)
-- [세션 06. 데이터 해석](#세션-06-데이터-해석)  
-  - [06-1. 관계 해석 / 그룹 통계 / 운용 효율](#06-1-관계-해석--그룹-통계--운용-효율)
-- [세션 07. 지도학습 및 평가](#세션-07-지도학습-및-평가)  
-  - [07-1. 전투 적합도 분류](#07-1-전투-적합도-분류)
-  - [07-2. 장비 수명 예측(회귀)](#07-2-장비-수명-예측회귀)
-  - [07-3. 정비 시급성 다중분류](#07-3-정비-시급성-다중분류)
-- [세션 08. 비지도학습](#세션-08-비지도학습)  
-  - [08-1. 군집화 / PCA 2차원 / 근무 유형 군집](#08-1-군집화--pca-2차원--근무-유형-군집)
-- [세션 09. 이미지 처리 (OpenCV)](#세션-09-이미지-처리-opencv)  
-  - [09-1. 이미지 밝기](#09-1-이미지-밝기)
-  - [09-2. 설계도 사각형 검출](#09-2-설계도-사각형-검출)
-  - [09-3. 객체 탐지(YOLO)와 좌표 저장](#09-3-객체-탐지yolo와-좌표-저장)
-- [세션 10. 이미지 분류·OCR·영상](#세션-10-이미지-분류ocr영상)  
-  - [10-1. 객체 빈도 통계](#10-1-객체-빈도-통계)
-  - [10-2. 이미지 속 글자(OCR)](#10-2-이미지-속-글자ocr)
-  - [10-3. 드론 영상 프레임 탐지](#10-3-드론-영상-프레임-탐지)
-- [종합문제 대비 (세션 11·12)](#종합문제-대비-세션-1112)
-- [공통 시작 코드](#공통-시작-코드)
-
-## 함수 빠른 찾기
-
-함수 이름을 눌러 설명과 코드가 있는 곳으로 이동합니다.
-
-[`pd.read_csv() / df.to_csv()`](#01-1-정비-기록-결측치-처리) · [`df.head() / df.describe()`](#01-1-정비-기록-결측치-처리) · [`df['컬럼']`](#01-1-정비-기록-결측치-처리) · [`fillna(값)`](#01-1-정비-기록-결측치-처리) · [`Series.mean() / median() / std()`](#01-1-정비-기록-결측치-처리) · [`scipy.stats.zscore`](#01-2-건강검진-이상치-제거) · [`df[조건식]`](#01-2-건강검진-이상치-제거) · [`apply()`](#01-2-건강검진-이상치-제거) · [`drop()`](#01-2-건강검진-이상치-제거) · [`pd.merge(a, b, on=, suffixes=)`](#01-3-센서-로그-통합정제) · [`dropna()`](#01-3-센서-로그-통합정제) · [`MinMaxScaler().fit_transform()`](#02-1-체력-측정-결과-정규화) · [`pd.DataFrame(배열, columns=)`](#02-1-체력-측정-결과-정규화) · [`pd.concat([a, b], axis=1)`](#02-1-체력-측정-결과-정규화) · [`Series.min() / max()`](#02-1-체력-측정-결과-정규화) · [`LabelEncoder()`](#02-2-보직지역-인코딩) · [`pd.get_dummies(df, columns=)`](#02-2-보직지역-인코딩) · [`dict() / list() / zip()`](#02-2-보직지역-인코딩) · [`lambda 입력: 식`](#02-3-영상-경로-유효성-검사) · [`os.path.exists(경로)`](#02-3-영상-경로-유효성-검사) · [`pd.to_datetime()`](#03-1-센서-로그-시간대별-통계) · [`sort_values() / set_index()`](#03-1-센서-로그-시간대별-통계) · [`resample('H').sum()`](#03-1-센서-로그-시간대별-통계) · [`plt.title/xlabel/ylabel/grid/tight_layout/savefig`](#03-1-센서-로그-시간대별-통계) · [`with open() / json.load()`](#03-2-보급-기록-json--csv) · [`pd.json_normalize()`](#03-2-보급-기록-json--csv) · [`df.rename(columns={})`](#03-2-보급-기록-json--csv) · [`df.agg([...])`](#04-1-부대별-통계--장비-사용-분포--설문-요약) · [`mode() / var() / quantile()`](#04-1-부대별-통계--장비-사용-분포--설문-요약) · [`str.strip() / '구분자'.join()`](#04-1-부대별-통계--장비-사용-분포--설문-요약) · [`Series.to_frame() / df.T`](#04-1-부대별-통계--장비-사용-분포--설문-요약) · [`iloc[] / loc[]`](#04-1-부대별-통계--장비-사용-분포--설문-요약) · [`os.makedirs(폴더, exist_ok=True)`](#05-1-분포이상치--산점도상관--상관-heatmap) · [`plt.subplot() / plt.subplots()`](#05-1-분포이상치--산점도상관--상관-heatmap) · [`plt.hist() / plt.boxplot()`](#05-1-분포이상치--산점도상관--상관-heatmap) · [`sns.scatterplot() / plt.legend()`](#05-1-분포이상치--산점도상관--상관-heatmap) · [`df.corr() / sns.heatmap(annot=True)`](#05-1-분포이상치--산점도상관--상관-heatmap) · [`round(값, 자리)`](#06-1-관계-해석--그룹-통계--운용-효율) · [`임계치(threshold)로 그룹 나누기`](#06-1-관계-해석--그룹-통계--운용-효율) · [`groupby().mean()`](#06-1-관계-해석--그룹-통계--운용-효율) · [`Series.idxmin() / idxmax()`](#06-1-관계-해석--그룹-통계--운용-효율) · [`pd.pivot_table(df, index, values, aggfunc)`](#06-1-관계-해석--그룹-통계--운용-효율) · [`train_test_split()`](#07-1-전투-적합도-분류) · [`RandomForestClassifier / fit / predict`](#07-1-전투-적합도-분류) · [`accuracy_score / confusion_matrix / classification_report`](#07-1-전투-적합도-분류) · [`LinearRegression`](#07-2-장비-수명-예측회귀) · [`mean_squared_error → RMSE`](#07-2-장비-수명-예측회귀) · [`GradientBoostingClassifier`](#07-3-정비-시급성-다중분류) · [`KMeans(n_clusters=3)`](#08-1-군집화--pca-2차원--근무-유형-군집) · [`PCA(n_components=2) / pca.components_`](#08-1-군집화--pca-2차원--근무-유형-군집) · [`silhouette_score`](#08-1-군집화--pca-2차원--근무-유형-군집) · [`cv2.imread(경로)`](#09-1-이미지-밝기) · [`cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)`](#09-1-이미지-밝기) · [`cv2.resize(img, (256, 256))`](#09-1-이미지-밝기) · [`cv2.GaussianBlur(img, (5,5), 0)`](#09-2-설계도-사각형-검출) · [`cv2.Canny(img, 50, 150)`](#09-2-설계도-사각형-검출) · [`cv2.findContours(...)`](#09-2-설계도-사각형-검출) · [`cv2.approxPolyDP(c, 0.02*cv2.arcLength(c, True), True)`](#09-2-설계도-사각형-검출) · [`cv2.isContourConvex(ap)`](#09-2-설계도-사각형-검출) · [`cv2.boundingRect(ap)`](#09-2-설계도-사각형-검출) · [`PIL.Image.open(경로)`](#09-3-객체-탐지yolo와-좌표-저장) · [`torch.hub.load('ultralytics/yolov5','yolov5s', pretrained=True)`](#09-3-객체-탐지yolo와-좌표-저장) · [`results.pandas().xyxy[0]`](#09-3-객체-탐지yolo와-좌표-저장) · [`[f for f in os.listdir(d) if f.lower().endswith(('.jpg','.png','.jpeg'))]`](#10-1-객체-빈도-통계) · [`collections.Counter(리스트)` / `.most_common(3)`](#10-1-객체-빈도-통계) · [`easyocr.Reader(['ko','en'])` / `readtext(경로)`](#10-2-이미지-속-글자ocr) · [`re.match(r'^[가-힣A-Za-z0-9]+$', text)`](#10-2-이미지-속-글자ocr) · [`cv2.VideoCapture(경로)` / `isOpened()` / `read()`](#10-3-드론-영상-프레임-탐지) · [`cap.get(cv2.CAP_PROP_FPS)`](#10-3-드론-영상-프레임-탐지)
+- [세션 01. 결측치·이상치 처리](#세션-01-결측치·이상치-처리)
+- [세션 02. 정규화·인코딩](#세션-02-정규화·인코딩)
+- [세션 03. 시계열 정렬·리샘플링 / JSON](#세션-03-시계열-정렬·리샘플링-/-JSON)
+- [세션 04. 기술통계량](#세션-04-기술통계량)
+- [세션 05. 데이터 시각화](#세션-05-데이터-시각화)
+- [세션 06. 데이터 해석](#세션-06-데이터-해석)
+- [세션 07. 지도학습 및 평가](#세션-07-지도학습-및-평가)
+- [세션 08. 비지도학습](#세션-08-비지도학습)
+- [세션 09. 이미지 처리 (OpenCV)](#세션-09-이미지-처리-(OpenCV))
+- [세션 10. 이미지 분류·OCR·영상](#세션-10-이미지-분류·OCR·영상)
 
 
 ---
 
-## 세션 01. 결측치·이상치 처리  
-[↑ 목차](#목차)
+## 세션 01. 결측치·이상치 처리
 
-**📘 개념 (세션 01)**
+### 📘 개념
 
 **데이터 전처리란**: 분석에 적합한 형태로 데이터를 가공하는 것. 정리·변환 → 필요한 데이터 선택·통합 → 분석용 데이터셋 생성.
 (구성: 결측치·이상치 처리 / 카테고리 인코딩 / 정규화·표준화)
 
 **결측치 처리**: 수집 과정에서 누락된 값.
-
 | 방법 | 내용 |
-
 |---|---|
-
 | 삭제 | 결측값이 있는 관측치(행)를 제거 |
-
 | 평균대치법 | 해당 변수의 평균값으로 대체 |
-
 | 단순확률대치법 | 변수의 분포에 따라 무작위로 대체 |
-
 | 다중대치법 | 여러 번 대체해서 불확실성을 반영 |
 
 **이상치**: 데이터 분포에서 멀리 떨어진 값.
-
 | 방법 | 내용 |
-
 |---|---|
-
 | 표준편차(Z-변환) | 평균 ±3 표준편차를 벗어나면 이상값. Z-변환은 평균 0, 표준편차 1로 변환 |
-
 | 사분위 범위(IQR) | IQR = Q3 − Q1, 하한 = Q1 − 1.5·IQR, 상한 = Q3 + 1.5·IQR |
 
-### 01-1. 정비 기록 결측치 처리  
-[↑ 세션 01](#세션-01-결측치이상치-처리)
-
-*PPT: 문제 1. 정비 기록 결측치 처리*
+### ✏ 문제 1. 정비 기록 결측치 처리
 
 **지문 요점**
-
 1. `repair_count`, `repair_duration` 빈칸 → 각 열의 **평균**으로
 2. `last_check_day` 빈칸 → **중앙값**으로
 3. `maintenance_cleaned.csv`로 저장
@@ -147,13 +75,9 @@ df["last_check_day"] = df["last_check_day"].fillna(df["last_check_day"].median()
 df.to_csv("maintenance_cleaned.csv", index=False)
 ```
 
-### 01-2. 건강검진 이상치 제거  
-[↑ 세션 01](#세션-01-결측치이상치-처리)
-
-*PPT: 문제 2. 건강검진 이상치 제거*
+### ✏ 문제 2. 건강검진 이상치 제거
 
 **지문 요점**
-
 1. `bmi`, `blood_pressure`에서 **Z-score 3 초과**를 이상치로 보고 제거
 2. `health_clean.csv`로 저장
 3. **제거된 행 수 출력**
@@ -199,13 +123,9 @@ q1, q3 = df["bmi"].quantile([.25, .75]); iqr = q3 - q1
 df_iqr = df[df["bmi"].between(q1 - 1.5*iqr, q3 + 1.5*iqr)]   # IQR/사분위 방식으로 하라는 지문일 때
 ```
 
-### 01-3. 센서 로그 통합·정제  
-[↑ 세션 01](#세션-01-결측치이상치-처리)
-
-*PPT: 문제 3. 센서 로그 통합·정제*
+### ✏ 문제 3. 센서 로그 통합·정제
 
 **지문 요점**
-
 1. 두 센서 파일을 **시간 기준으로 병합**
 2. `motion_count`의 `"error"` → 결측 → 전체 **평균**으로 대체
 3. 남은 결측 행 제거 후 `merged_sensor_cleaned.csv` 저장
@@ -233,40 +153,27 @@ merged.to_csv("merged_sensor_cleaned.csv", index=False)
 
 ---
 
-## 세션 02. 정규화·인코딩  
-[↑ 목차](#목차)
+## 세션 02. 정규화·인코딩
 
-**📘 개념 (세션 02)**
+### 📘 개념
 
 **스케일링**: 특성(Feature) 값의 범위를 조정해서 특정 특성에 편향되지 않게 한다.
-
 | 방법 | 내용 | 언제 |
-
 |---|---|---|
-
 | 표준화(Standardization) | 평균 0, 표준편차 1로 맞춤. 모든 특성이 동일한 분포 | 모델이 특정 특성에 치우치지 않게 |
-
 | 정규화(Normalization) | 값을 0~1 범위로 변환 | 값의 크기 차이가 크고 분포가 일정하지 않을 때 |
 
 **인코딩**: 문자 범주 데이터를 모델이 이해하는 숫자로 바꾸는 과정(대부분의 알고리즘은 숫자만 입력으로 받음).
-
 | 방법 | 내용 | 장점 | 단점 |
-
 |---|---|---|---|
-
 | Label Encoding(정수 인코딩) | 텍스트를 숫자로 | 메모리 효율적, 간단 | 잘못된 경향성(순서·크기)을 학습할 수 있음 |
-
 | One-hot Encoding | 범주를 벡터로 표현 | 순서·크기 관계 제거로 공정한 표현 | 차원 증가, 메모리 사용↑, 희소 행렬 |
 
 **보너스**: 파일 경로 처리 — `os.path.exists`로 존재 여부 확인.
 
-### 02-1. 체력 측정 결과 정규화  
-[↑ 세션 02](#세션-02-정규화인코딩)
-
-*PPT: 문제 1. 체력 측정 결과 정규화*
+### ✏ 문제 1. 체력 측정 결과 정규화
 
 **지문 요점**
-
 1. `pushup_count`, `run_time_2km`, `situp_count`에 **MinMaxScaler**
 2. **원본과 함께** `fitness_scaled.csv` 저장
 3. 각 컬럼의 **최소/최대값 출력**
@@ -295,13 +202,9 @@ out = pd.concat([df, scaled], axis=1); out.to_csv("fitness_scaled.csv", index=Fa
 print(scaled.min(), scaled.max())       # StandardScaler는 평균0·표준편차1
 ```
 
-### 02-2. 보직·지역 인코딩  
-[↑ 세션 02](#세션-02-정규화인코딩)
-
-*PPT: 문제 2. 보직·지역 인코딩*
+### ✏ 문제 2. 보직·지역 인코딩
 
 **지문 요점**
-
 1. `position` → **Label Encoding**, `region` → **One-Hot**
 2. `encoded_soldiers.csv` 저장
 3. 각 인코딩 컬럼의 **설명 출력**
@@ -328,13 +231,9 @@ df = pd.get_dummies(df, columns=["region"], dtype=int)      # 원핫: 순서 없
 df.to_csv("encoded_soldiers.csv", index=False)
 ```
 
-### 02-3. 영상 경로 유효성 검사  
-[↑ 세션 02](#세션-02-정규화인코딩)
-
-*PPT: 문제 3. 영상 경로 유효성 검사*
+### ✏ 문제 3. 영상 경로 유효성 검사
 
 **지문 요점**
-
 1. `file_path`에 **실제 존재하는 파일만** 필터링
 2. `exists`(True/False) 컬럼 추가
 3. 있는 것 `valid_videos.csv`, 없는 것 `missing_videos.csv`로 저장
@@ -360,23 +259,18 @@ df[~df["exists"]].to_csv("missing_videos.csv", index=False)
 
 ---
 
-## 세션 03. 시계열 정렬·리샘플링 / JSON  
-[↑ 목차](#목차)
+## 세션 03. 시계열 정렬·리샘플링 / JSON
 
-**📘 개념 (세션 03)**
+### 📘 개념
 
 **시계열 데이터**: 시간의 흐름에 따라 순서대로 기록된 데이터. 시간 정보(날짜·시각)가 있고 그에 따라 값이 변한다.
 - 특징: **시간 종속성**, **추세(Trend)**, **계절성(Seasonality)**, **불규칙성(Irregularity)**
 - 리샘플링 주기: 분 `min`, 시간 `H`, 일 `D`, 주 `W`, 월 `M`, 분기 `Q`, 연도 `Y`/`A`
 - JSON → 표: `json.load` → `json_normalize` → `rename`
 
-### 03-1. 센서 로그 시간대별 통계  
-[↑ 세션 03](#세션-03-시계열-정렬리샘플링--json)
-
-*PPT: 문제 1. 센서 로그 시간대별 통계*
+### ✏ 문제 1. 센서 로그 시간대별 통계
 
 **지문 요점**
-
 1. `timestamp`를 datetime으로 바꾸고 **정렬**
 2. 감지 횟수를 **1시간 단위 합계**로 리샘플링
 3. `hourly_motion.csv` 저장 + **시계열 그래프**
@@ -407,13 +301,9 @@ plt.title("Hourly motion"); plt.xlabel("time"); plt.ylabel("sum"); plt.grid(True
 plt.tight_layout(); plt.savefig("hourly_motion.png"); plt.close()
 ```
 
-### 03-2. 보급 기록 JSON → CSV  
-[↑ 세션 03](#세션-03-시계열-정렬리샘플링--json)
-
-*PPT: 문제 2. 보급 기록 JSON → CSV*
+### ✏ 문제 2. 보급 기록 JSON → CSV
 
 **지문 요점**
-
 1. JSON을 `unit, supply_date, water, ration, medicine` 컬럼의 DataFrame으로
 2. `supply_log.csv` 저장
 3. 항목별 **총합 출력**
@@ -443,38 +333,24 @@ print(df[["water", "ration", "medicine"]].sum())
 
 ---
 
-## 세션 04. 기술통계량  
-[↑ 목차](#목차)
+## 세션 04. 기술통계량
 
-**📘 개념 (세션 04)**
+### 📘 개념
 
 **기술통계량**: 데이터의 전반적인 특성·분포를 요약하는 수치 지표. 용도: 분포 파악 / 이상치 탐지 / 모델링 전 전처리 참고.
-
 | 지표 | 뜻 |
-
 |---|---|
-
 | 평균(Mean) | 모든 값의 합 ÷ 데이터 수 |
-
 | 중앙값(Median) | 정렬했을 때 가운데 값 |
-
 | 최빈값(Mode) | 가장 자주 나타나는 값 |
-
 | 분산(Variance) | 각 값이 평균에서 떨어진 정도를 제곱해 평균낸 값 |
-
 | 표준편차(Std) | 분산의 제곱근(원래 단위와 같아 해석이 쉬움) |
-
 | 범위(Range) | 최댓값 − 최솟값 |
-
 | 사분위 범위(IQR) | Q3(75%) − Q1(25%), 중간 50% 데이터의 범위 |
 
-### 04-1. 부대별 통계 / 장비 사용 분포 / 설문 요약  
-[↑ 세션 04](#세션-04-기술통계량)
-
-*PPT: 문제 1~3. 부대별 통계 / 장비 사용 분포 / 설문 요약*
+### ✏ 문제 1~3. 부대별 통계 / 장비 사용 분포 / 설문 요약
 
 **지문 요점**
-
 1. 전체와 **부대(그룹)별** 평균·중앙값·표준편차
 2. 평균·표준편차·최소·최대·중앙값, 최빈값
 3. 결과를 csv로 저장(`health_stats.csv` 등)
@@ -509,23 +385,18 @@ df[cols].mode().iloc[0]            # 최빈값 / df[cols].var(), .quantile([.25,
 
 ---
 
-## 세션 05. 데이터 시각화  
-[↑ 목차](#목차)
+## 세션 05. 데이터 시각화
 
-**📘 개념 (세션 05)**
+### 📘 개념
 
 - 도구: **matplotlib**, **seaborn**, plotly
 - 차트: 막대(bar), 히스토그램, 박스플롯, 산점도, 파이 등
   - 히스토그램 = 분포 / 박스플롯 = 분포와 이상치 / 산점도 = 두 변수 관계
 - **상관계수**(피어슨, `corr()`): −1~1. 부호는 방향, 절댓값이 클수록 관계가 강함. **heatmap**으로 한 번에 시각화.
 
-### 05-1. 분포·이상치 / 산점도·상관 / 상관 heatmap  
-[↑ 세션 05](#세션-05-데이터-시각화)
-
-*PPT: 문제 1~3. 분포·이상치 / 산점도·상관 / 상관 heatmap*
+### ✏ 문제 1~3. 분포·이상치 / 산점도·상관 / 상관 heatmap
 
 **지문 요점**
-
 1. 히스토그램+박스플롯 → `plots/` 폴더에 저장
 2. `training_pressure`–`command_tension` **산점도**
 3. **상관계수 행렬 + heatmap**을 png로 저장
@@ -564,10 +435,9 @@ plt.tight_layout(); plt.savefig("stress_correlation.png"); plt.close()
 
 ---
 
-## 세션 06. 데이터 해석  
-[↑ 목차](#목차)
+## 세션 06. 데이터 해석
 
-**📘 개념 (세션 06)**
+### 📘 개념
 
 - **상관관계로 해석**: 상관계수의 부호와 크기로 "어떤 관계인지" 문장으로 설명.
 - **임계치(threshold)로 해석**: 기준값(중앙값 등)을 정해 높은 그룹/낮은 그룹으로 나눠 평균 비교.
@@ -575,13 +445,9 @@ plt.tight_layout(); plt.savefig("stress_correlation.png"); plt.close()
 - **pivot_table** 4요소: ① 대상 DataFrame ② `index`(행) ③ `values`(값) ④ `aggfunc`(집계 방법)
 - 지표 방향 주의: 수리 횟수처럼 **낮을수록 좋은** 지표가 있다.
 
-### 06-1. 관계 해석 / 그룹 통계 / 운용 효율  
-[↑ 세션 06](#세션-06-데이터-해석)
-
-*PPT: 문제 1~3. 관계 해석 / 그룹 통계 / 운용 효율*
+### ✏ 문제 1~3. 관계 해석 / 그룹 통계 / 운용 효율
 
 **지문 요점**
-
 1. 두 변수의 **상관계수 + 해석**
 2. **임계치**로 높은/낮은 그룹 평균 비교
 3. `groupby` 평균, 가장 낮은 항목, `pivot_table`로 구조화
@@ -620,60 +486,38 @@ pt = pd.pivot_table(m, index="unit", values=score, aggfunc="mean")
 
 ---
 
-## 세션 07. 지도학습 및 평가  
-[↑ 목차](#목차)
+## 세션 07. 지도학습 및 평가
 
-**📘 개념 (세션 07)**
+### 📘 개념
 
 **머신러닝**: 데이터를 스스로 학습해 특징을 찾고, 새 데이터의 결과를 예측하는 모델.
-
 | 구분 | 설명 | 종류 |
-
 |---|---|---|
-
 | 지도학습 | 정답을 함께 주고 정답을 학습 | **분류**(클래스로 분류), **회귀**(연속값 예측) |
-
 | 비지도학습 | 정답 없이 데이터의 특성을 스스로 학습 | **군집화**, **차원 축소** |
 
 **분류 평가** (혼동행렬 기반, 일반 정의)
-
 | 지표 | 뜻 |
-
 |---|---|
-
 | 혼동행렬 | 예측 클래스 vs 실제 클래스를 행렬로 표시 |
-
 | 정확도 | 전체 중 맞춘 비율 |
-
 | 정밀도 | 양성이라 예측한 것 중 실제 양성 비율 |
-
 | 재현율 | 실제 양성 중 맞춘 비율 |
-
 | F1-score | 정밀도와 재현율의 조화평균 |
 
 **회귀 평가**
-
 | 지표 | 뜻 |
-
 |---|---|
-
 | MAE | 예측값과 실제값의 절대 오차 평균. 작을수록 좋음 |
-
 | MSE | 오차 제곱의 평균. 이상치에 민감 |
-
 | RMSE | MSE의 제곱근. 이상치 민감도를 고려하면서 직관적 |
-
 | R² | 모델이 데이터를 얼마나 설명하는지. 1에 가까울수록 좋음 |
 
 **모델**: 분류 = RandomForestClassifier, GradientBoostingClassifier / 회귀 = LinearRegression. 학습 `fit()`, 예측 `predict()`, 분할 `train_test_split()`(X=특징, y=타깃).
 
-### 07-1. 전투 적합도 분류  
-[↑ 세션 07](#세션-07-지도학습-및-평가)
-
-*PPT: 문제 1. 전투 적합도 분류*
+### ✏ 문제 1. 전투 적합도 분류
 
 **지문 요점**
-
 1. `status`를 Label Encoding(적합=1, 부적합=0)
 2. **8:2 분할** 후 RandomForestClassifier 학습
 3. 예측 결과 csv 저장 + 정확도·혼동행렬·classification_report 출력
@@ -706,13 +550,9 @@ res.to_csv("combat_ready_result.csv", index=False)
 print(accuracy_score(yte, pred)); print(confusion_matrix(yte, pred)); print(classification_report(yte, pred))
 ```
 
-### 07-2. 장비 수명 예측(회귀)  
-[↑ 세션 07](#세션-07-지도학습-및-평가)
-
-*PPT: 문제 2. 장비 수명 예측(회귀)*
+### ✏ 문제 2. 장비 수명 예측(회귀)
 
 **지문 요점**
-
 1. **LinearRegression** 학습
 2. 테스트 데이터 예측 + **RMSE**
 3. `life_prediction.csv`(`equipment_id, predicted_life`) + 실제 vs 예측 그래프 저장
@@ -741,13 +581,9 @@ plt.scatter(yte, pred); plt.plot([yte.min(), yte.max()], [yte.min(), yte.max()],
 plt.xlabel("actual"); plt.ylabel("predicted"); plt.savefig("life_plot.png"); plt.close()
 ```
 
-### 07-3. 정비 시급성 다중분류  
-[↑ 세션 07](#세션-07-지도학습-및-평가)
-
-*PPT: 문제 3. 정비 시급성 다중분류*
+### ✏ 문제 3. 정비 시급성 다중분류
 
 **지문 요점**
-
 1. `priority_level`(A/B/C)을 Label Encoding
 2. GradientBoosting 또는 RandomForest 다중 분류
 3. classification_report·confusion_matrix + `priority_prediction.csv`
@@ -776,28 +612,20 @@ out.to_csv("priority_prediction.csv", index=False)
 
 ---
 
-## 세션 08. 비지도학습  
-[↑ 목차](#목차)
+## 세션 08. 비지도학습
 
-**📘 개념 (세션 08)**
+### 📘 개념
 
 | 방법 | 설명 |
-
 |---|---|
-
 | 군집화 | 레이블 없는 데이터를 유사성에 따라 그룹(클러스터)으로 나눔. 데이터의 내재된 구조 파악, EDA에 유용 (`KMeans(n_clusters)`) |
-
 | 차원 축소 | 고차원 데이터를 저차원으로 변환해 간소화, 중요한 패턴 유지 (`PCA`, `pca.components_`) |
 
 **실루엣 계수**(군집이 잘 나뉘었는지): a(i) = 같은 군집 내 다른 점들과의 평균 거리, b(i) = 가장 가까운 다른 군집 점들과의 평균 거리. 일반식 s = (b − a) / max(a, b), −1~1이고 **클수록 좋음**.
 
-### 08-1. 군집화 / PCA 2차원 / 근무 유형 군집  
-[↑ 세션 08](#세션-08-비지도학습)
-
-*PPT: 문제 1~3. 군집화 / PCA 2차원 / 근무 유형 군집*
+### ✏ 문제 1~3. 군집화 / PCA 2차원 / 근무 유형 군집
 
 **지문 요점**
-
 1. `KMeans(n_clusters=3)`, 결과 `cluster` 컬럼 저장
 2. **StandardScaler → PCA 2차원** 후 산점도
 3. `groupby('cluster').mean()`으로 군집 특성 해석
@@ -833,23 +661,18 @@ plt.savefig("duty_pca_plot.png"); plt.close(); df.to_csv("duty_clusters.csv", in
 
 ---
 
-## 세션 09. 이미지 처리 (OpenCV)  
-[↑ 목차](#목차)
+## 세션 09. 이미지 처리 (OpenCV)
 
-**📘 개념 (세션 09)**
+### 📘 개념
 
 - **OpenCV**: 컴퓨터 비전·머신러닝 오픈소스 라이브러리. 실시간 이미지 처리 중심(이미지·영상 처리, 객체 탐지 등).
 - 학습 포인트: ① 이미지 읽고 처리 ② 윤곽선·도형 검출 ③ 객체 좌표 추출·데이터화
 - 흐름: `imread`(BGR) → `cvtColor`(흑백) → `resize` → `GaussianBlur` → `Canny` → `findContours` → `approxPolyDP`/`arcLength`/`isContourConvex` → `boundingRect`
 - **YOLO**: 사전학습 모델로 객체 탐지(클래스명, 좌표 x1·y1·x2·y2, 신뢰도).
 
-### 09-1. 이미지 밝기  
-[↑ 세션 09](#세션-09-이미지-처리-opencv)
-
-*PPT: 문제 1. 이미지 밝기*
+### ✏ 문제 1. 이미지 밝기
 
 **지문 요점**
-
 1. 모든 이미지를 **256×256 리사이즈 → 흑백 → 평균 밝기**
 2. `brightness_result.csv` 저장, 가장 밝은 파일명 출력
 
@@ -876,13 +699,9 @@ b = pd.DataFrame(rows); b.to_csv("brightness_result.csv", index=False)
 print(b.loc[b["brightness"].idxmax(), "filename"])
 ```
 
-### 09-2. 설계도 사각형 검출  
-[↑ 세션 09](#세션-09-이미지-처리-opencv)
-
-*PPT: 문제 2. 설계도 사각형 검출*
+### ✏ 문제 2. 설계도 사각형 검출
 
 **지문 요점**
-
 1. `findContours`로 윤곽 검출
 2. `approxPolyDP`로 **사각형만** 필터링
 3. 이미지별 (x,y,width,height)와 사각형 수를 `rectangles.csv`에 저장
@@ -916,13 +735,9 @@ for f in sorted(os.listdir("images/blueprints")):
 pd.DataFrame(rows).to_csv("rectangles.csv", index=False)
 ```
 
-### 09-3. 객체 탐지(YOLO)와 좌표 저장  
-[↑ 세션 09](#세션-09-이미지-처리-opencv)
-
-*PPT: 문제 3. 객체 탐지(YOLO)와 좌표 저장*
+### ✏ 문제 3. 객체 탐지(YOLO)와 좌표 저장
 
 **지문 요점**
-
 1. 사전학습 **YOLOv5**로 사람·차량 탐지
 2. 클래스명과 (x1,y1,x2,y2) 추출
 3. `detections.csv`(`filename, class, x1, y1, x2, y2`), 사람/차량 수 출력
@@ -964,23 +779,18 @@ for (x1, y1, x2, y2), c in zip(r.boxes.xyxy.tolist(), r.boxes.cls.tolist()):
 
 ---
 
-## 세션 10. 이미지 분류·OCR·영상  
-[↑ 목차](#목차)
+## 세션 10. 이미지 분류·OCR·영상
 
-**📘 개념 (세션 10)**
+### 📘 개념
 
 - 탐지 결과를 **통계화**(클래스별 빈도) → `Counter`, 상위 N개 막대그래프
 - **OCR**: 이미지 속 글자 인식(`easyocr.Reader`, `readtext`), 정규식 `re`로 한글·영문·숫자만 추출
 - **영상**: `cv2.VideoCapture` → `isOpened()` → `read()`로 프레임 추출(예: 30FPS면 30프레임마다 1초 간격)
 - 이미지에서 추출한 정보를 표로 만들어 csv로 저장
 
-### 10-1. 객체 빈도 통계  
-[↑ 세션 10](#세션-10-이미지-분류ocr영상)
-
-*PPT: 문제 1. 객체 빈도 통계*
+### ✏ 문제 1. 객체 빈도 통계
 
 **지문 요점**
-
 1. 각 이미지에 YOLO 탐지
 2. 클래스별 **전체 빈도**를 `object_count.csv`에
 3. **상위 3개** 막대그래프 `top3_objects.png`
@@ -1002,13 +812,9 @@ top3 = cnt.most_common(3)
 plt.bar([k for k, _ in top3], [v for _, v in top3]); plt.title("Top3 objects"); plt.savefig("top3_objects.png"); plt.close()
 ```
 
-### 10-2. 이미지 속 글자(OCR)  
-[↑ 세션 10](#세션-10-이미지-분류ocr영상)
-
-*PPT: 문제 2. 이미지 속 글자(OCR)*
+### ✏ 문제 2. 이미지 속 글자(OCR)
 
 **지문 요점**
-
 1. `easyocr`로 텍스트 추출
 2. **정규식**으로 한글·영문·숫자만 남김
 3. `supply_info.csv` 저장
@@ -1033,13 +839,9 @@ for f in sorted(os.listdir("images/supplies_imgs")):
 pd.DataFrame(rows).to_csv("supply_info.csv", index=False)
 ```
 
-### 10-3. 드론 영상 프레임 탐지  
-[↑ 세션 10](#세션-10-이미지-분류ocr영상)
-
-*PPT: 문제 3. 드론 영상 프레임 탐지*
+### ✏ 문제 3. 드론 영상 프레임 탐지
 
 **지문 요점**
-
 1. **1초 간격**으로 프레임 추출(30FPS → 30프레임마다)
 2. 각 프레임 YOLO 탐지
 3. `drone_detection.csv`(`frame_number, class, x1, y1, x2, y2`) + 프레임별 개수 시계열 그래프
@@ -1065,39 +867,4 @@ while True:
     i += 1
 cap.release(); print(len(frames), "프레임 추출")
 # frames 각각에 YOLO 적용 → frame_number,class,x1,y1,x2,y2 저장 → 프레임별 개수 plot
-```
-
-
----
-
-## 종합문제 대비 (세션 11·12)  
-[↑ 목차](#목차)
-
-종합문제는 세션 01~10의 조합입니다: 표 데이터 회귀·분류(세션 07), 이상 탐지(IsolationForest)·PCA(세션 08), 이미지 인원·차량 수(세션 09·10 YOLO), 결과 csv·그래프 저장.
-
-> **언제 쓰나**: 종합 문제의 표 데이터 예측: **정규화 → 분할 → 모델 → 평가 → 결과 csv → 그래프**. 변수 영향도를 물으면 `feature_importances_`, 이상 탐지는 `IsolationForest`.
-
-```python
-# 회귀: 정규화 → 분할 → RandomForestRegressor → RMSE → 예측 csv → 그래프
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error             # 구버전 sklearn에서도 되는 방식
-X = StandardScaler().fit_transform(df[feats]); y = df[target]
-Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.2, random_state=42)
-m = RandomForestRegressor(random_state=42).fit(Xtr, ytr); p = m.predict(Xte); print(np.sqrt(mean_squared_error(yte, p)))   # RMSE
-imp = pd.Series(m.feature_importances_, index=feats).sort_values(ascending=False)   # 변수 중요도
-# 이상탐지: IsolationForest(contamination=0.05).fit_predict(X) == -1 → anomaly=1
-```
-
-## 공통 시작 코드  
-[↑ 목차](#목차)
-
-> **언제 쓰나**: 모든 문제의 시작. 파일을 읽을 땐 `read_csv`, 결과 저장은 반드시 `to_csv(index=False)`. 한글 깨지면 `encoding='cp949'`.
-
-```python
-import os, numpy as np, pandas as pd
-import matplotlib.pyplot as plt, seaborn as sns
-df = pd.read_csv("data.csv")            # 한글 깨지면 encoding="cp949"
-df.head(); df.info(); df.describe(); df.isna().sum(); df.shape
-df.to_csv("result.csv", index=False)    # index=False 필수
-os.makedirs("plots", exist_ok=True)
 ```

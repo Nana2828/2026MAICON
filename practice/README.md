@@ -36,7 +36,6 @@ pip install -r practice/requirements.txt
 4. 문제 2(YOLO)는 `torch.hub`가 막히면 `ultralytics`(YOLOv8) 방식을 쓰세요.
 
 ## 치트시트 (시험 중 다른 탭에서 참고)
-- `cheatsheet/SUMMARY.md`: 공식 교육 세션 01~10 요약과 시험 대비 포인트
-- `cheatsheet/CONCEPTS.md`: 수업 PPT의 개념 설명(결측치·이상치, 스케일링·인코딩, 평가지표, 군집·PCA 등) 요약
-- `cheatsheet/FUNCTIONS.md`: 수업 PPT '활용 코드 정리'의 함수별 뜻 + 한 줄 예시 색인 (Ctrl+F로 검색)
-- `cheatsheet/CHEATSHEET.md`: 세션별 복붙용 코드(전처리, 시계열, 통계, 시각화, 모델링, OpenCV, YOLO, OCR, 영상)
+- **`cheatsheet/CHEATSHEET.md` 한 파일**에 전부 통합되어 있습니다: 세션 01~10 순서대로 **개념 → 문제별 지문 요점 → PPT '활용 코드 정리' 함수(뜻·언제) → 복붙 코드**.
+- 맨 위 **지문 키워드로 찾기**·**목차**·**함수 빠른 찾기**의 링크를 눌러 해당 문제로 이동합니다(GitHub에서 열 때 동작).
+- 이전 분리본(`CONCEPTS.md`, `FUNCTIONS.md`, `SUMMARY.md`, 예전 `CHEATSHEET_old.md`)은 `cheatsheet/archive/`에 보관했습니다.
