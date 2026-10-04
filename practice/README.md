@@ -37,5 +37,6 @@ pip install -r practice/requirements.txt
 
 ## 치트시트 (시험 중 다른 탭에서 참고)
 - `cheatsheet/SUMMARY.md`: 공식 교육 세션 01~10 요약과 시험 대비 포인트
+- `cheatsheet/CONCEPTS.md`: 수업 PPT의 개념 설명(결측치·이상치, 스케일링·인코딩, 평가지표, 군집·PCA 등) 요약
 - `cheatsheet/FUNCTIONS.md`: 수업 PPT '활용 코드 정리'의 함수별 뜻 + 한 줄 예시 색인 (Ctrl+F로 검색)
 - `cheatsheet/CHEATSHEET.md`: 세션별 복붙용 코드(전처리, 시계열, 통계, 시각화, 모델링, OpenCV, YOLO, OCR, 영상)
