@@ -960,6 +960,28 @@ for (x1, y1, x2, y2), c in zip(r.boxes.xyxy.tolist(), r.boxes.cls.tolist()):
     print(r.names[int(c)], x1, y1, x2, y2)            # COCO: person=0, car=2, bus=5, truck=7
 ```
 
+**클래스 이름 바꾸기·합치기 (후처리)** — 사전학습 모델에 없는 클래스(예: 탱크)를 다루라는 문제를 대비한 패턴
+
+> **언제 쓰나**: 사전학습 YOLO(COCO 80개 클래스)에는 탱크 같은 군 장비 클래스가 없습니다. 비슷하게 탐지된 클래스(`truck`, `car` 등)를 문제 지시대로 **다른 이름으로 바꾸거나 합쳐서** 집계할 때 쓴다. 정확히 학습시키라는 지시면 아래 파인튜닝을 쓴다.
+
+```python
+# det: filename, class, x1, y1, x2, y2 (위에서 만든 탐지 결과 표)
+class_map = {"truck": "tank", "car": "tank"}      # {탐지된 이름: 부를 이름} — 문제 지시대로
+det["class"] = det["class"].replace(class_map)
+det = det[det["class"].isin(["person", "tank"])]  # 필요한 클래스만 남기기
+print(det["class"].value_counts())
+```
+
+```python
+# ultralytics(YOLOv8): 사전학습 클래스 목록 확인 → 새 클래스로 파인튜닝 (CPU: 작은 모델·작은 이미지·적은 epoch)
+from ultralytics import YOLO
+model = YOLO("yolov8n.pt")
+print(model.names)                      # {0: 'person', 2: 'car', 7: 'truck', ...} — 'tank' 없음 확인
+# 새 클래스를 쓰려면 data.yaml(train/val 경로, names: [새 클래스 목록])을 준비한 뒤
+# model.train(data="data.yaml", epochs=10, imgsz=416, batch=8, device="cpu")
+```
+
+
 
 ---
 
