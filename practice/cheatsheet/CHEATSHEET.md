@@ -2,6 +2,8 @@
 
 > 시험 중 다른 탭에서 열어 복붙용으로 쓰세요. 파일명·컬럼명은 **문제 지문대로 바꾸세요**. 대부분의 스니펫은 공식 실습 데이터로 실행 확인했습니다(YOLO/OCR은 환경 의존이라 미실행).
 
+> ⚠ **시험 환경은 Python 3.9 + pandas 1.x 로 보입니다**(사전 테스트 오류 메시지 기준). 그래서 `root_mean_squared_error`(sklearn 1.4+)나 `resample("h")`(소문자, pandas 2.2+)는 쓰지 말고 이 문서의 방식을 쓰세요. 막히면 `pd.__version__`, `sklearn.__version__`으로 버전을 먼저 확인하세요.
+>
 > ⚠ **컬럼명은 지문과 실제 파일이 다를 수 있습니다**(예: 지문 `run_time_2km(sec)` ↔ 실제 파일 `run_time_2km`). 항상 `df.columns`로 먼저 확인하세요.
 
 
@@ -92,7 +94,7 @@ df[~df["exists"]].to_csv("missing_videos.csv", index=False)
 df = pd.read_csv("sensor_log.csv")
 df["timestamp"] = pd.to_datetime(df["timestamp"])
 df = df.sort_values("timestamp").set_index("timestamp")
-hourly = df["motion_detected"].resample("h").sum()     # 구버전 pandas는 "H"
+hourly = df["motion_detected"].resample("H").sum()     # 시험 환경(pandas 1.x)은 대문자 "H". 최신 pandas는 "h"
 hourly.to_csv("hourly_motion.csv")
 plt.figure(figsize=(10, 4)); plt.plot(hourly.index, hourly.values)
 plt.title("Hourly motion"); plt.xlabel("time"); plt.ylabel("sum"); plt.grid(True)
@@ -328,10 +330,10 @@ cap.release(); print(len(frames), "프레임 추출")
 ```python
 # 회귀: 정규화 → 분할 → RandomForestRegressor → RMSE → 예측 csv → 그래프
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import root_mean_squared_error        # 구버전은 np.sqrt(mean_squared_error)
+from sklearn.metrics import mean_squared_error             # 구버전 sklearn에서도 되는 방식
 X = StandardScaler().fit_transform(df[feats]); y = df[target]
 Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.2, random_state=42)
-m = RandomForestRegressor(random_state=42).fit(Xtr, ytr); p = m.predict(Xte); print(root_mean_squared_error(yte, p))
+m = RandomForestRegressor(random_state=42).fit(Xtr, ytr); p = m.predict(Xte); print(np.sqrt(mean_squared_error(yte, p)))   # RMSE
 imp = pd.Series(m.feature_importances_, index=feats).sort_values(ascending=False)   # 변수 중요도
 # 이상탐지: IsolationForest(contamination=0.05).fit_predict(X) == -1 → anomaly=1
 ```
