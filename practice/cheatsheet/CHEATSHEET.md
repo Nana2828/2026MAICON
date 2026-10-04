@@ -31,6 +31,16 @@ df["last_check_day"] = df["last_check_day"].fillna(df["last_check_day"].median()
 df.to_csv("maintenance_cleaned.csv", index=False)
 ```
 
+### 임시 컬럼은 저장 전에 삭제 (세션 01 주의점)
+```python
+# 계산용으로 내가 만든 컬럼은 저장 전에 지운다. 문제에서 요구한 컬럼이면 남긴다.
+df["bmi_z"] = zscore(df["bmi"])                 # 임시 컬럼
+df = df[df["bmi_z"].abs() <= 3]
+df = df.drop(columns=["bmi_z"])                   # ← 저장 전 삭제
+print(df.columns.tolist())                        # 원래 컬럼만 남았는지 확인
+df.to_csv("health_clean.csv", index=False)
+```
+
 ### Z-score 이상치 제거 / IQR
 ```python
 from scipy.stats import zscore
