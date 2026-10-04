@@ -34,7 +34,7 @@ df.to_csv("maintenance_cleaned.csv", index=False)
 ### 임시 컬럼은 저장 전에 삭제 (세션 01 주의점)
 ```python
 # 계산용으로 내가 만든 컬럼은 저장 전에 지운다. 문제에서 요구한 컬럼이면 남긴다.
-df["bmi_z"] = zscore(df["bmi"])                 # 임시 컬럼
+df["bmi_z"] = (df["bmi"] - df["bmi"].mean()) / df["bmi"].std(ddof=0)   # 임시 컬럼
 df = df[df["bmi_z"].abs() <= 3]
 df = df.drop(columns=["bmi_z"])                   # ← 저장 전 삭제
 print(df.columns.tolist())                        # 원래 컬럼만 남았는지 확인
@@ -43,9 +43,11 @@ df.to_csv("health_clean.csv", index=False)
 
 ### Z-score 이상치 제거 / IQR
 ```python
-from scipy.stats import zscore
 df = pd.read_csv("health_check.csv")
-z = df[["bmi", "blood_pressure"]].apply(zscore)
+cols = ["bmi", "blood_pressure"]
+# scipy 없이 pandas만으로 Z-score (scipy.stats.zscore와 같은 값: ddof=0)
+z = (df[cols] - df[cols].mean()) / df[cols].std(ddof=0)
+# (scipy를 쓸 수 있다면: from scipy.stats import zscore; z = df[cols].apply(zscore))
 mask = (z.abs() <= 3).all(axis=1)          # 둘 다 3 이하인 행만 남김
 print("제거된 행 수:", (~mask).sum())
 clean = df[mask]; clean.to_csv("health_clean.csv", index=False)

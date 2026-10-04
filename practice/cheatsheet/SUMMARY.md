@@ -22,7 +22,7 @@
 
 ### 01 결측치·이상치
 - 결측: 삭제(`dropna`) / 대치(평균 `fillna(mean)`, 중앙값). 어떤 열을 평균·중앙값으로 채우라는 지시를 그대로 따를 것.
-- 이상치: **Z-score > 3** 제거, 또는 **IQR**(Q1−1.5·IQR ~ Q3+1.5·IQR 밖).
+- 이상치: **Z-score > 3** 제거(scipy가 막히면 `(x - x.mean()) / x.std(ddof=0)`로 직접 계산, 같은 값), 또는 **IQR**(Q1−1.5·IQR ~ Q3+1.5·IQR 밖).
 - ⚠ **계산을 위해 내가 임의로 만든 컬럼(임시 컬럼)은 저장 전에 반드시 삭제**한다. 단, 문제에서 그 컬럼을 요구했다면 그대로 둔다.
   - 예: Z-score 계산용 `bmi_z`, 이상치 표시용 `is_outlier`, 중간 계산용 `tmp` 등 → `df = df.drop(columns=["bmi_z", "is_outlier"])` 후 `to_csv`.
   - 저장 직전에 `print(df.columns.tolist())`로 지문이 요구한 컬럼만 남았는지 확인.

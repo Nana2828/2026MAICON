@@ -46,7 +46,7 @@ df['repair_count'].mean(), df['repair_count'].median()
 ```
 
 ### `scipy.stats.zscore`
-표준점수(Z). 절댓값 3 초과=이상치
+표준점수(Z). 절댓값 3 초과=이상치. **scipy가 안 될 때는 pandas로: `(s - s.mean()) / s.std(ddof=0)`** (같은 값)
 ```python
 from scipy.stats import zscore
 z = zscore(df['repair_duration'].dropna())
