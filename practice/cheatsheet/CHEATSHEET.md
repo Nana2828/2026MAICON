@@ -1,6 +1,6 @@
 # 📚 시험용 통합 치트시트 (세션 01~10, 개념 → 문제 → 함수 → 코드)
 
-> **수업 PPT 순서 그대로**, 세션마다 ① 개념 → ② 문제별 지문 요점 → ③ PPT '활용 코드 정리' 함수(뜻·언제) → ④ 복붙 코드로 한 군데에 이어 놨습니다.  
+> **수업 PPT 순서 그대로**, 세션마다 **① 간단 개념 → 지문 요점 → ② 함수 정리(뜻·언제) → ③ 코드 설명(줄마다 문법·과정 주석) → ④ 코드(복붙용)** 순서로 한 군데에 이어 놨습니다.  
 > 시험 중에는 아래 **[지문 키워드로 찾기](#지문-키워드로-찾기)** 또는 **[목차](#목차)**에서 링크를 눌러 해당 문제로 이동하세요. 함수 이름이 생각나면 **[함수 빠른 찾기](#함수-빠른-찾기)**, 그냥 찾으려면 `Ctrl+F`.
 
 > ⚠ **시험 환경은 Python 3.9 + pandas 1.x로 보입니다**(RMSE는 `np.sqrt(mean_squared_error)`, 리샘플링은 `"H"`). `scipy`/`sklearn`이 안 되면 pandas 직접 계산 방식(세션 01·02 코드 참고)을 쓰세요.  
@@ -120,7 +120,7 @@
 ## 세션 01. 결측치·이상치 처리  
 [↑ 목차](#목차)
 
-**📘 개념 (세션 01)**
+**① 간단 개념 (세션 01)**
 
 **데이터 전처리란**: 분석에 적합한 형태로 데이터를 가공하는 것. 정리·변환 → 필요한 데이터 선택·통합 → 분석용 데이터셋 생성.
 (구성: 결측치·이상치 처리 / 카테고리 인코딩 / 정규화·표준화)
@@ -152,7 +152,7 @@
 2. `last_check_day` 빈칸 → **중앙값**으로
 3. `maintenance_cleaned.csv`로 저장
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `pd.read_csv() / df.to_csv()` — 파일 읽기 / 저장  
   ↳ **언제**: 파일을 열 때 / 결과를 낼 때. 저장은 항상 `index=False`.
@@ -165,7 +165,30 @@
 - `Series.mean() / median() / std()` — 평균 / 중앙값 / 표준편차  
   ↳ **언제**: 평균은 보통 값, 중앙값은 극단값이 있을 때, 표준편차는 흩어진 정도.
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 읽기 → 빈칸을 열별로 채우기 → 저장
+df = pd.read_csv("파일.csv")
+# 문법: pd.read_csv("경로") = csv를 표(DataFrame)로 읽는다. df는 그 표의 이름.
+
+m = df["col_a"].mean()
+# 문법: df["열이름"] = 열 하나(Series). .mean() = 그 열의 평균. NaN(빈칸)은 계산에서 빠진다.
+# 과정: 채울 값을 먼저 변수에 담아 둔다. 안 그러면 채운 뒤 평균이 달라진다.
+
+df["col_a"] = df["col_a"].fillna(m)
+# 문법: .fillna(값) = NaN을 값으로 채운 "새 열"을 돌려준다. 원본이 자동으로 바뀌지는 않는다.
+# 문법: df["col_a"] = ... 로 다시 넣어야 표에 반영된다. (이 대입을 빼먹는 실수가 많다)
+
+df["col_b"] = df["col_b"].fillna(df["col_b"].median())
+# 문법: .median() = 중앙값. 지문이 "중앙값으로"라고 하면 mean 대신 이것.
+# 과정: 열마다 지문이 정한 값(평균/중앙값)으로 한 줄씩 반복한다.
+
+df.to_csv("결과.csv", index=False)
+# 문법: .to_csv("파일명") = 표를 csv로 저장. index=False = 0,1,2… 번호 열은 쓰지 않는다.
+```
+
+**④ 코드**
 
 > **언제 쓰나**: 지문에 "빈칸/누락/NaN을 채워라"가 있을 때. **평균**은 값이 고르게 퍼진 열, **중앙값**은 극단값(이상치)이 섞인 열, 지문이 지정하면 그대로 따른다. 행을 버리라고 하면 `dropna()`.
 
@@ -188,7 +211,7 @@ df.to_csv("maintenance_cleaned.csv", index=False)
 2. `health_clean.csv`로 저장
 3. **제거된 행 수 출력**
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `scipy.stats.zscore` — 표준점수(Z). 절댓값 3 초과=이상치  
   ↳ **언제**: "Z-score로 이상치". scipy가 안 되면 `(x-x.mean())/x.std(ddof=0)`.
@@ -199,7 +222,41 @@ df.to_csv("maintenance_cleaned.csv", index=False)
 - `drop()` — 행/열 삭제  
   ↳ **언제**: 열을 지울 때 `columns=[...]`, 행을 지울 때 `index=[...]`. 임시 컬럼 정리에 사용.
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 열별 Z-score 계산 → 기준 넘는 행 찾기 → 제거 → 개수 출력 → 저장
+cols = ["col_a", "col_b"]
+# 문법: 열 이름 리스트. 한 번 정의해 두면 아래에서 반복해 쓴다.
+
+z = (df[cols] - df[cols].mean()) / df[cols].std(ddof=0)
+# 문법: df[cols] = 여러 열을 고르면 표(대괄호 2개). 표 - 평균 = 열마다 자기 평균을 뺀다.
+# 문법: .std(ddof=0) = 모표준편차. scipy의 zscore와 같은 값을 얻으려면 ddof=0.
+# 과정: Z = (값 - 평균) / 표준편차. 평균에서 표준편차의 몇 배 떨어졌는지.
+
+mask = (z.abs() <= 3).all(axis=1)
+# 문법: z.abs() = 절댓값. <= 3 = 각 칸이 True/False. .all(axis=1) = 한 행에서 "모두 True"일 때만 True.
+# 과정: 지문이 "3 초과를 이상치"라 했으니 3 이하인 행만 정상. 열이 여러 개면 한 열이라도 넘으면 그 행은 제거.
+
+print("제거된 행 수:", (~mask).sum())
+# 문법: ~mask = True/False 뒤집기. True는 1로 세어지므로 .sum() = 제거 대상 개수.
+
+clean = df[mask]
+# 문법: df[True/False 열] = True인 행만 남긴다. (불리언 인덱싱)
+
+clean.to_csv("결과.csv", index=False)
+# 과정: 계산하려고 만든 임시 열이 있으면 저장 전에 drop(columns=[...])으로 지운다.
+
+# ── IQR 방식 (지문이 IQR/사분위라고 할 때) ──
+q1, q3 = df["col_a"].quantile([.25, .75])
+# 문법: .quantile([.25, .75]) = 25%, 75% 지점 값을 한 번에. 앞의 값은 q1, 뒤의 값은 q3에 나눠 담는다.
+iqr = q3 - q1
+df_iqr = df[df["col_a"].between(q1 - 1.5*iqr, q3 + 1.5*iqr)]
+# 문법: .between(하한, 상한) = 하한~상한 사이면 True (양 끝 포함).
+# 과정: 정상 범위 = Q1-1.5·IQR ~ Q3+1.5·IQR. 이 범위 안의 행만 남긴다.
+```
+
+**④ 코드**
 
 > **언제 쓰나**: 계산하려고 내가 만든 컬럼(z값, 플래그 등)이 있을 때. 저장 직전에 `drop`으로 지운다. 지문이 그 컬럼을 요구했으면 남긴다.
 
@@ -240,14 +297,39 @@ df_iqr = df[df["bmi"].between(q1 - 1.5*iqr, q3 + 1.5*iqr)]   # IQR/사분위 방
 2. `motion_count`의 `"error"` → 결측 → 전체 **평균**으로 대체
 3. 남은 결측 행 제거 후 `merged_sensor_cleaned.csv` 저장
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `pd.merge(a, b, on=, suffixes=)` — 두 표를 기준 열로 합치기. 겹치는 열 이름 구분  
   ↳ **언제**: 파일/표가 두 개 이상이고 "합쳐라". 기준 열이 같아야 하고 겹치는 열은 `suffixes`로 구분.
 - `dropna()` — 빈칸이 있는 행 삭제  
   ↳ **언제**: "빈칸 있는 행은 제거". 특정 열만 보려면 `subset=[...]`.
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 두 파일 읽기 → 기준 열로 합치기 → 문자 "error"를 NaN으로 → 평균으로 채우기 → 남은 빈칸 행 삭제 → 저장
+a = pd.read_csv("a.csv"); b = pd.read_csv("b.csv")
+# 문법: 한 줄에 `;`로 두 문장을 쓸 수 있다.
+
+merged = pd.merge(a, b, on=["time", "post_id"], how="inner")
+# 문법: pd.merge(왼쪽표, 오른쪽표, on=기준열, how=방식). on에 리스트를 주면 여러 열이 모두 같은 행끼리 합친다.
+# 문법: how="inner" = 양쪽에 모두 있는 행만. "left" = 왼쪽 표의 행은 전부 유지(없는 쪽은 NaN).
+# 과정: 기준 열 이름·값이 두 표에서 같아야 합쳐진다. 겹치는 다른 열은 suffixes=("_a","_b")로 구분.
+
+merged["col"] = pd.to_numeric(merged["col"], errors="coerce")
+# 문법: pd.to_numeric(열, errors="coerce") = 숫자로 바꾸고, 못 바꾸는 값("error" 같은 글자)은 NaN으로 만든다.
+# 과정: 이걸 해야 "error"가 섞인 열이 숫자 열이 되어 평균 계산이 가능하다.
+
+merged["col"] = merged["col"].fillna(merged["col"].mean())
+# 과정: 지문이 "평균으로 대체"라고 했으니 NaN을 평균으로 채운다.
+
+merged = merged.dropna()
+# 문법: .dropna() = NaN이 하나라도 있는 행을 삭제. 특정 열만 보려면 dropna(subset=["col"]).
+
+merged.to_csv("결과.csv", index=False)
+```
+
+**④ 코드**
 
 > **언제 쓰나**: 파일이 여러 개이고 "합쳐라/통합하라"일 때 `merge`(기준 열 지정). 숫자 열에 `'error'` 같은 문자가 섞이면 `to_numeric(errors='coerce')`로 NaN 처리 후 채우기/삭제.
 
@@ -266,7 +348,7 @@ merged.to_csv("merged_sensor_cleaned.csv", index=False)
 ## 세션 02. 정규화·인코딩  
 [↑ 목차](#목차)
 
-**📘 개념 (세션 02)**
+**① 간단 개념 (세션 02)**
 
 **스케일링**: 특성(Feature) 값의 범위를 조정해서 특정 특성에 편향되지 않게 한다.
 
@@ -295,7 +377,7 @@ merged.to_csv("merged_sensor_cleaned.csv", index=False)
 2. **원본과 함께** `fitness_scaled.csv` 저장
 3. 각 컬럼의 **최소/최대값 출력**
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `MinMaxScaler().fit_transform()` — 0~1 정규화  
   ↳ **언제**: "0~1 정규화". 값의 범위가 중요할 때.
@@ -306,7 +388,35 @@ merged.to_csv("merged_sensor_cleaned.csv", index=False)
 - `Series.min() / max()` — 최솟값 / 최댓값  
   ↳ **언제**: 정규화 결과 범위 확인(0~1인지), 값 범위 점검.
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 정규화할 열 고르기 → 스케일러 적용 → 새 열 이름 붙여 표로 만들기 → 원본 옆에 붙이기 → 저장
+from sklearn.preprocessing import MinMaxScaler
+# 문법: from 모듈 import 이름 = 모듈에서 필요한 것만 가져온다.
+
+cols = ["col_a", "col_b", "col_c"]
+# 과정: 지문이 정규화하라고 한 열만 리스트에 넣는다. 열 이름은 df.columns로 확인.
+
+arr = MinMaxScaler().fit_transform(df[cols])
+# 문법: MinMaxScaler() = 스케일러 만들기. .fit_transform(표) = 최솟값·최댓값을 배운(fit) 뒤 바로 변환(transform).
+# 과정: 변환식 (x - min) / (max - min) → 모든 값이 0~1. 결과는 표가 아니라 숫자 배열(numpy)이다.
+
+scaled = pd.DataFrame(arr, columns=[c + "_scaled" for c in cols])
+# 문법: pd.DataFrame(배열, columns=열이름들) = 배열을 표로 되돌린다.
+# 문법: [c + "_scaled" for c in cols] = 리스트 컴프리헨션. cols의 각 이름 뒤에 "_scaled"를 붙인 새 리스트.
+# 과정: 열 이름을 지정하지 않으면 0,1,2로 나온다.
+
+out = pd.concat([df, scaled], axis=1)
+# 문법: pd.concat([표1, 표2], axis=1) = 옆으로 붙인다. (axis=0은 아래로)
+# 주의: axis=1은 "행 번호(인덱스)가 같은 것끼리" 붙는다. df와 scaled의 행 번호가 같아야 한다.
+
+out.to_csv("결과.csv", index=False)
+print(scaled.min(), scaled.max())
+# 과정: 각 열의 최솟값이 0, 최댓값이 1인지 확인하는 출력. StandardScaler는 평균 0, 표준편차 1.
+```
+
+**④ 코드**
 
 > **언제 쓰나**: 지문이 **"0~1 정규화"**이면 MinMaxScaler, **"표준화(평균0·표준편차1)"**이면 StandardScaler. 거리 기반 모델(KMeans, PCA)이나 단위가 다른 열을 비교할 때 사용.
 
@@ -330,7 +440,7 @@ print(scaled.min(), scaled.max())       # StandardScaler는 평균0·표준편�
 2. `encoded_soldiers.csv` 저장
 3. 각 인코딩 컬럼의 **설명 출력**
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `LabelEncoder()` — 문자 범주를 정수로  
   ↳ **언제**: 타깃/순서 있는 범주를 정수로. 변환표는 `classes_`로 확인("인코딩 설명 출력").
@@ -339,7 +449,31 @@ print(scaled.min(), scaled.max())       # StandardScaler는 평균0·표준편�
 - `dict() / list() / zip()` — 딕셔너리·리스트 만들기, 두 목록 짝짓기  
   ↳ **언제**: 인코딩 대응표를 출력하거나 두 목록을 짝지을 때.
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 라벨 인코딩(한 열) → 대응표 출력 → 원핫(다른 열) → 저장
+from sklearn.preprocessing import LabelEncoder
+
+le = LabelEncoder()
+# 문법: LabelEncoder() = 글자 → 정수로 바꾸는 도구를 만든다.
+
+df["col_enc"] = le.fit_transform(df["col_text"])
+# 문법: .fit_transform(열) = 어떤 값들이 있는지 배우고(fit) 각 값을 정수로 바꾼다(transform). 알파벳/가나다 순으로 0,1,2…
+
+print(dict(zip(le.classes_, le.transform(le.classes_))))
+# 문법: le.classes_ = 배운 원래 값 목록. le.transform(...) = 그 값들의 정수.
+# 문법: zip(a, b) = 두 목록을 짝지음. dict(...) = {원래값: 정수} 사전. 지문의 "인코딩 설명 출력"에 해당.
+
+df = pd.get_dummies(df, columns=["col_cat"], dtype=int)
+# 문법: pd.get_dummies(표, columns=[열]) = 그 열의 값마다 0/1 열을 새로 만들고 원래 열은 없앤다.
+# 문법: dtype=int = True/False 대신 1/0으로. (이걸 빼면 True/False로 저장될 수 있다)
+# 과정: 순서가 없는 범주(지역 등)는 원핫, 지문이 Label이라고 한 열은 LabelEncoder.
+
+df.to_csv("결과.csv", index=False)
+```
+
+**④ 코드**
 
 > **언제 쓰나**: 문자(범주) 열을 모델/계산에 쓸 때. 순서가 의미 있거나 클래스가 2개·타깃(정답) 열이면 **라벨 인코딩**, 순서가 없는 입력 특성(지역, 보직 등)은 **원핫(get_dummies)**.
 
@@ -363,14 +497,31 @@ df.to_csv("encoded_soldiers.csv", index=False)
 2. `exists`(True/False) 컬럼 추가
 3. 있는 것 `valid_videos.csv`, 없는 것 `missing_videos.csv`로 저장
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `lambda 입력: 식` — 이름 없는 짧은 함수  
   ↳ **언제**: `apply` 안에서 한 줄짜리 간단한 처리를 할 때.
 - `os.path.exists(경로)` — 파일이 있는지 True/False  
   ↳ **언제**: 파일/폴더가 실제로 있는지 확인할 때.
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 경로 열로 True/False 열 만들기 → 있는 것/없는 것으로 나눠 각각 저장
+df["exists"] = df["file_path"].apply(lambda p: os.path.exists(p))
+# 문법: .apply(함수) = 열의 값을 하나씩 함수에 넣어 결과를 모은다.
+# 문법: lambda p: 식 = 이름 없는 한 줄 함수. p는 각 칸의 값(경로).
+# 문법: os.path.exists(경로) = 그 경로에 파일/폴더가 있으면 True. (import os 필요)
+
+df[df["exists"]].to_csv("valid.csv", index=False)
+# 문법: df[True/False 열] = True인 행만. → 존재하는 것만 저장.
+
+df[~df["exists"]].to_csv("missing.csv", index=False)
+# 문법: ~ = True/False 뒤집기 → 존재하지 않는 것만 저장.
+# 주의: 경로가 상대경로면 노트북 위치 기준이다. 파일 위치가 다르면 전부 False로 나온다.
+```
+
+**④ 코드**
 
 > **언제 쓰나**: 표에 파일 경로가 있고 "실제 있는 것만 남겨라"일 때. `apply(os.path.exists)`로 True/False 열을 만든 뒤 필터링.
 
@@ -387,7 +538,7 @@ df[~df["exists"]].to_csv("missing_videos.csv", index=False)
 ## 세션 03. 시계열 정렬·리샘플링 / JSON  
 [↑ 목차](#목차)
 
-**📘 개념 (세션 03)**
+**① 간단 개념 (세션 03)**
 
 **시계열 데이터**: 시간의 흐름에 따라 순서대로 기록된 데이터. 시간 정보(날짜·시각)가 있고 그에 따라 값이 변한다.
 - 특징: **시간 종속성**, **추세(Trend)**, **계절성(Seasonality)**, **불규칙성(Irregularity)**
@@ -405,7 +556,7 @@ df[~df["exists"]].to_csv("missing_videos.csv", index=False)
 2. 감지 횟수를 **1시간 단위 합계**로 리샘플링
 3. `hourly_motion.csv` 저장 + **시계열 그래프**
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `pd.to_datetime()` — 문자를 날짜 형식으로  
   ↳ **언제**: 날짜가 문자열일 때 반드시 먼저 변환(정렬·리샘플링 전제).
@@ -416,7 +567,34 @@ df[~df["exists"]].to_csv("missing_videos.csv", index=False)
 - `plt.title/xlabel/ylabel/grid/tight_layout/savefig` — 제목·축·격자·여백·저장  
   ↳ **언제**: 모든 그래프의 마무리. 저장 후 `plt.close()`.
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 날짜 변환 → 시간순 정렬 → 날짜를 인덱스로 → 1시간 단위 합계 → 저장·그래프
+df["timestamp"] = pd.to_datetime(df["timestamp"])
+# 문법: pd.to_datetime(열) = 글자로 된 날짜·시각을 진짜 날짜 형식으로 바꾼다. 이걸 해야 시간 계산이 된다.
+
+df = df.sort_values("timestamp").set_index("timestamp")
+# 문법: .sort_values("열") = 그 열 기준 오름차순 정렬. .set_index("열") = 그 열을 행 이름(인덱스)으로.
+# 문법: 점(.)으로 이어 쓰기 = 앞의 결과에 바로 다음 함수를 적용(메서드 체이닝).
+# 과정: resample은 날짜가 인덱스일 때만 쓸 수 있다.
+
+hourly = df["col"].resample("H").sum()
+# 문법: .resample("H") = 1시간 단위로 묶는다. 뒤에 집계(.sum() 합계, .mean() 평균, .count() 개수)를 붙여야 한다.
+# 문법: 주기 코드 "min" 분 / "H" 시간 / "D" 일 / "W" 주 / "M" 월.
+# 과정: 지문이 "시간별 합계"면 sum, "시간별 평균"이면 mean.
+
+hourly.to_csv("결과.csv")
+# 주의: hourly는 인덱스(시간)가 중요한 데이터라 index=False를 쓰지 않는다. (시간 열이 사라진다)
+
+plt.figure(figsize=(10, 4)); plt.plot(hourly.index, hourly.values)
+# 문법: plt.figure(figsize=(가로, 세로)) = 그림 크기. plt.plot(x, y) = 선 그래프.
+plt.title("제목"); plt.xlabel("x"); plt.ylabel("y"); plt.grid(True)
+plt.tight_layout(); plt.savefig("그래프.png"); plt.close()
+# 문법: tight_layout = 글자 잘림 방지. savefig = 파일 저장(show보다 먼저). close = 그림 닫기.
+```
+
+**④ 코드**
 
 > **언제 쓰나**: 시간 컬럼이 있고 "시간/일/주 단위로 합계·평균을 내라"일 때. 반드시 `to_datetime` → 정렬/인덱스 → `resample`. 주기: 분 `min`, 시간 `H`, 일 `D`, 주 `W`, 월 `M`.
 
@@ -442,7 +620,7 @@ plt.tight_layout(); plt.savefig("hourly_motion.png"); plt.close()
 2. `supply_log.csv` 저장
 3. 항목별 **총합 출력**
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `with open() / json.load()` — JSON 파일 읽기  
   ↳ **언제**: `.json` 파일을 파이썬 객체로 읽을 때.
@@ -451,7 +629,29 @@ plt.tight_layout(); plt.savefig("hourly_motion.png"); plt.close()
 - `df.rename(columns={})` — 열 이름 바꾸기  
   ↳ **언제**: 열 이름을 지문이 요구한 이름으로 바꿀 때.
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: JSON 파일 열기 → 파이썬 객체로 읽기 → 표로 펼치기 → 열 이름 정리 → 저장·합계
+import json
+with open("파일.json", encoding="utf-8") as f:
+    data = json.load(f)
+# 문법: with open(경로) as f: = 파일을 열고, 블록이 끝나면 자동으로 닫는다.
+# 문법: json.load(f) = JSON을 리스트/딕셔너리로 읽는다. encoding="utf-8"로 한글 깨짐 방지.
+
+df = pd.json_normalize(data)
+# 문법: pd.json_normalize(데이터) = 안에 들어 있는 딕셔너리를 펼쳐 한 줄짜리 표로 만든다.
+# 과정: {"items": {"water": 3}} 는 "items.water"라는 열 이름이 된다. (점으로 연결)
+
+df = df.rename(columns={"items.water": "water", "items.ration": "ration"})
+# 문법: .rename(columns={"옛이름": "새이름"}) = 열 이름 바꾸기. 지문이 요구한 이름과 똑같이.
+
+df.to_csv("결과.csv", index=False)
+print(df[["water", "ration"]].sum())
+# 문법: df[[열1, 열2]].sum() = 열별 합계. 지문의 "항목별 총합 출력".
+```
+
+**④ 코드**
 
 > **언제 쓰나**: 입력이 `.json`이거나 한 칸 안에 딕셔너리가 중첩(`items`)되어 있을 때. 중첩이면 `json_normalize`, 컬럼명은 `rename`으로 정리.
 
@@ -470,7 +670,7 @@ print(df[["water", "ration", "medicine"]].sum())
 ## 세션 04. 기술통계량  
 [↑ 목차](#목차)
 
-**📘 개념 (세션 04)**
+**① 간단 개념 (세션 04)**
 
 **기술통계량**: 데이터의 전반적인 특성·분포를 요약하는 수치 지표. 용도: 분포 파악 / 이상치 탐지 / 모델링 전 전처리 참고.
 
@@ -495,7 +695,7 @@ print(df[["water", "ration", "medicine"]].sum())
 2. 평균·표준편차·최소·최대·중앙값, 최빈값
 3. 결과를 csv로 저장(`health_stats.csv` 등)
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `df.agg([...])` — 여러 통계를 한 번에  
   ↳ **언제**: 여러 통계(평균·중앙값·표준편차)를 한 번에 구할 때.
@@ -508,7 +708,36 @@ print(df[["water", "ration", "medicine"]].sum())
 - `iloc[] / loc[]` — 번호로 선택 / 이름·조건으로 선택  
   ↳ **언제**: 번호로 고를 땐 `iloc`, 이름/조건으로 고를 땐 `loc`.
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 열 고르기 → 전체 통계 → 그룹별 통계 → 열 이름 정리 → 저장
+cols = ["col_a", "col_b"]
+
+overall = df[cols].agg(["mean", "median", "std"])
+# 문법: .agg([통계 이름들]) = 여러 통계를 한 번에. 행 = 통계 이름, 열 = 원래 열. 결과는 표.
+
+by_unit = df.groupby("unit")[cols].agg(["mean", "std"])
+# 문법: df.groupby("그룹열") = 그룹으로 나눈다. [cols] = 그 안에서 볼 열. .agg(...) = 그룹마다 통계.
+# 과정: 결과의 열 이름이 (col_a, mean)처럼 2단(MultiIndex)이 된다.
+
+by_unit.columns = ["_".join(c) for c in by_unit.columns]
+# 문법: "_".join(("col_a","mean")) = "col_a_mean". 2단 열 이름을 한 줄 이름으로 펼친다.
+
+overall.to_csv("overall.csv"); by_unit.to_csv("by_unit.csv")
+# 주의: 행 이름(mean/median, 부대명)이 인덱스에 있으므로 이 경우엔 index=False를 쓰지 않는다.
+#   → 인덱스를 열로 내리려면 .reset_index().to_csv(..., index=False)
+
+df[cols].mode().iloc[0]
+# 문법: .mode() = 최빈값 표(동점이면 여러 행). .iloc[0] = 첫 번째 행만. (agg("mode")는 오류가 난다)
+
+# ── 전체 + 그룹을 한 표로 합치기 ──
+all_row = df[cols].agg(["mean", "std"]).T          # .T = 행·열 뒤집기
+# 과정: 합치려면 모양이 같아야 한다. "행 = 대상, 열 = 통계"로 맞춘 뒤 pd.concat([전체, 그룹별])로 위아래 붙인다.
+# 과정: concat(axis=0) 뒤에 reset_index()로 이름을 열로 내리고 저장.
+```
+
+**④ 코드**
 
 > **언제 쓰나**: "평균·중앙값·표준편차를 구하라"는 `agg`, "부대별/유형별로"가 붙으면 `groupby` 후 `agg`. 점수처럼 이산값의 대표값은 `mode()`.
 
@@ -528,7 +757,7 @@ df[cols].mode().iloc[0]            # 최빈값 / df[cols].var(), .quantile([.25,
 ## 세션 05. 데이터 시각화  
 [↑ 목차](#목차)
 
-**📘 개념 (세션 05)**
+**① 간단 개념 (세션 05)**
 
 - 도구: **matplotlib**, **seaborn**, plotly
 - 차트: 막대(bar), 히스토그램, 박스플롯, 산점도, 파이 등
@@ -546,7 +775,7 @@ df[cols].mode().iloc[0]            # 최빈값 / df[cols].var(), .quantile([.25,
 2. `training_pressure`–`command_tension` **산점도**
 3. **상관계수 행렬 + heatmap**을 png로 저장
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `os.makedirs(폴더, exist_ok=True)` — 폴더 만들기(있어도 오류 안 남)  
   ↳ **언제**: 그래프 저장 폴더가 없을 때 먼저 만들기(`savefig` 오류 방지).
@@ -559,7 +788,35 @@ df[cols].mode().iloc[0]            # 최빈값 / df[cols].var(), .quantile([.25,
 - `df.corr() / sns.heatmap(annot=True)` — 상관계수 표 / 열지도  
   ↳ **언제**: 여러 숫자 열의 상관관계를 한 번에 볼 때.
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 폴더 만들기 → 여러 그래프를 한 그림에 그리기 → 저장 / 산점도 / 상관 heatmap
+fig, ax = plt.subplots(2, 3, figsize=(14, 7))
+# 문법: plt.subplots(행, 열) = 그림 한 장 안에 2×3 칸을 만든다. ax[행, 열]로 칸을 고른다.
+
+for i, c in enumerate(cols):
+    # 문법: enumerate(리스트) = (번호, 값)을 차례로. i = 0,1,2 → 칸의 열 번호, c = 열 이름.
+    ax[0, i].hist(df[c], bins=15); ax[0, i].set_title(f"{c} hist")
+    # 문법: .hist(값, bins=구간 수) = 히스토그램(분포). f"{c} hist" = 문자열 안에 변수 값 넣기.
+    ax[1, i].boxplot(df[c]);       ax[1, i].set_title(f"{c} box")
+    # 문법: .boxplot(값) = 박스플롯(중앙값·사분위·이상치 점).
+
+os.makedirs("plots", exist_ok=True)
+# 문법: os.makedirs(폴더, exist_ok=True) = 폴더 만들기. 이미 있어도 오류 없음. savefig 전에 필요.
+plt.tight_layout(); plt.savefig("plots/dist.png"); plt.close()
+
+sns.scatterplot(data=s, x="x열", y="y열", hue="그룹열")
+# 문법: sns.scatterplot(data=표, x=, y=) = 산점도. hue = 그룹별 색 구분(선택).
+plt.savefig("scatter.png"); plt.close()
+
+sns.heatmap(s.select_dtypes("number").corr(), annot=True, cmap="coolwarm", vmin=-1, vmax=1)
+# 문법: .select_dtypes("number") = 숫자 열만. .corr() = 열끼리 상관계수 표(−1~1).
+# 문법: annot=True = 칸에 숫자 표시. vmin/vmax = 색 범위 고정. cmap = 색상표.
+plt.tight_layout(); plt.savefig("corr.png"); plt.close()
+```
+
+**④ 코드**
 
 > **언제 쓰나**: 분포를 볼 때 **히스토그램**, 이상치를 볼 때 **박스플롯**, 두 변수 관계는 **산점도**, 여러 변수 상관은 **corr + heatmap**. 저장은 `savefig` 후 `close()`.
 
@@ -583,7 +840,7 @@ plt.tight_layout(); plt.savefig("stress_correlation.png"); plt.close()
 ## 세션 06. 데이터 해석  
 [↑ 목차](#목차)
 
-**📘 개념 (세션 06)**
+**① 간단 개념 (세션 06)**
 
 - **상관관계로 해석**: 상관계수의 부호와 크기로 "어떤 관계인지" 문장으로 설명.
 - **임계치(threshold)로 해석**: 기준값(중앙값 등)을 정해 높은 그룹/낮은 그룹으로 나눠 평균 비교.
@@ -602,7 +859,7 @@ plt.tight_layout(); plt.savefig("stress_correlation.png"); plt.close()
 2. **임계치**로 높은/낮은 그룹 평균 비교
 3. `groupby` 평균, 가장 낮은 항목, `pivot_table`로 구조화
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `round(값, 자리)` — 반올림  
   ↳ **언제**: 출력/해석용 숫자 정리. 저장 파일 값은 지문 요구에 맞춘다.
@@ -615,7 +872,37 @@ plt.tight_layout(); plt.savefig("stress_correlation.png"); plt.close()
 - `pd.pivot_table(df, index, values, aggfunc)` — 행=그룹, 값=집계로 요약표  
   ↳ **언제**: "표로 요약/구조화"할 때(행=그룹, 값=집계).
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 상관계수 → 기준값으로 두 그룹 나누기 → 그룹 평균 비교 → groupby 평균 → 가장 낮은 항목 → pivot_table
+r = df["col_a"].corr(df["col_b"])
+# 문법: 열1.corr(열2) = 두 열의 상관계수(−1~1). 양수면 같이 증가, 음수면 반대로.
+print(round(r, 3))
+# 문법: round(값, 자리수) = 반올림.
+
+th = df["col_x"].median()
+# 과정: 기준값(임계치)을 정한다. 지문이 값을 주면 그것, 없으면 중앙값/평균.
+
+hi = df[df["col_x"] > th]["col_y"].mean()
+lo = df[df["col_x"] <= th]["col_y"].mean()
+# 문법: df[조건] = 조건에 맞는 행만. 그 뒤 ["col_y"] = 그 행들의 열 → .mean() 평균.
+# 과정: 높은 그룹과 낮은 그룹의 평균을 비교하고, 차이를 한 문장으로 해석한다.
+
+avg = m.groupby("unit")[score].mean().round(2)
+# 문법: groupby("그룹열")[열들].mean() = 그룹별 평균. .round(2) = 소수 둘째 자리까지.
+avg.to_csv("avg.csv")
+
+print(m[score].mean().idxmin())
+# 문법: m[score].mean() = 열별 평균(Series). .idxmin() = 가장 작은 값의 이름. (idxmax는 가장 큰 값)
+# 주의: 지표가 "낮을수록 좋은" 것인지(수리 횟수 등) 확인하고 해석.
+
+pt = pd.pivot_table(m, index="unit", values=score, aggfunc="mean")
+# 문법: pivot_table(표, index=행으로 쓸 열, values=값으로 쓸 열들, aggfunc=집계 방법) = 요약표.
+# 과정: groupby().mean()과 결과가 비슷하다. 지문이 pivot_table이라고 하면 이걸 쓴다.
+```
+
+**④ 코드**
 
 > **언제 쓰나**: "관계/영향을 해석하라"는 상관계수(`corr`), "그룹 간 비교"는 `groupby().mean()`, "표로 요약/구조화하라"는 `pivot_table`. 해석은 숫자 근거 + 한두 문장.
 
@@ -639,7 +926,7 @@ pt = pd.pivot_table(m, index="unit", values=score, aggfunc="mean")
 ## 세션 07. 지도학습 및 평가  
 [↑ 목차](#목차)
 
-**📘 개념 (세션 07)**
+**① 간단 개념 (세션 07)**
 
 **머신러닝**: 데이터를 스스로 학습해 특징을 찾고, 새 데이터의 결과를 예측하는 모델.
 
@@ -680,7 +967,7 @@ pt = pd.pivot_table(m, index="unit", values=score, aggfunc="mean")
 2. **8:2 분할** 후 RandomForestClassifier 학습
 3. 예측 결과 csv 저장 + 정확도·혼동행렬·classification_report 출력
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `train_test_split()` — 학습/테스트 분리  
   ↳ **언제**: 모델을 만들 때 항상 먼저. 평가는 **테스트셋**으로. 보통 `test_size=0.2, random_state=42`.
@@ -689,7 +976,39 @@ pt = pd.pivot_table(m, index="unit", values=score, aggfunc="mean")
 - `accuracy_score / confusion_matrix / classification_report` — 분류 평가  
   ↳ **언제**: 분류 모델 평가. 지문에 적힌 지표를 모두 출력.
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 정답 열 만들기 → X/y 나누기 → 학습/테스트 분할 → 학습 → 예측 → 결과 저장 → 평가 출력
+df["y"] = (df["status"] == "적합").astype(int)
+# 문법: (열 == 값) = 각 행이 같은지 True/False. .astype(int) = True/False → 1/0.
+# 과정: 지문이 "적합=1, 부적합=0"이라고 했으니 이렇게 직접 지정. (LabelEncoder는 가나다 순이라 반대가 될 수 있다)
+
+X = df[["col_a", "col_b"]]; y = df["y"]
+# 과정: X = 문제를 푸는 데 쓰는 특징(여러 열, 대괄호 2개), y = 맞혀야 할 정답(열 하나). 정답 열은 X에서 뺀다.
+
+Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.2, random_state=42)
+# 문법: train_test_split(X, y, test_size=0.2) = 80% 학습 / 20% 테스트로 무작위 분할. 4개를 순서대로 돌려준다.
+# 문법: random_state=42 = 같은 결과가 나오게 고정. 지문에 값이 있으면 그 값.
+
+clf = RandomForestClassifier(random_state=42).fit(Xtr, ytr)
+# 문법: 모델이름(옵션).fit(특징, 정답) = 학습. 학습 데이터만 넣는다.
+
+pred = clf.predict(Xte)
+# 문법: .predict(특징) = 예측값. 테스트 특징만 넣는다.
+
+res = df.loc[Xte.index, ["soldier_id"]].copy()
+# 문법: df.loc[행 이름들, 열들] = 이름으로 고르기. Xte.index = 테스트로 뽑힌 행 번호 → 그 행의 id만.
+# 문법: .copy() = 복사본. (경고 방지)
+res["actual"] = yte.values; res["pred"] = pred
+# 문법: .values = 인덱스 없이 값만. 인덱스가 어긋나 NaN 되는 것을 막는다.
+res.to_csv("결과.csv", index=False)
+
+print(accuracy_score(yte, pred)); print(confusion_matrix(yte, pred)); print(classification_report(yte, pred))
+# 문법: 평가함수(실제, 예측) 순서. 평가는 항상 "테스트 정답 vs 테스트 예측".
+```
+
+**④ 코드**
 
 > **언제 쓰나**: 정답(타깃)이 **범주**(적합/부적합, A/B/C)일 때. 평가는 정확도·혼동행렬·classification_report. 불균형이면 정확도만 보지 말고 report의 F1을 본다.
 
@@ -719,14 +1038,38 @@ print(accuracy_score(yte, pred)); print(confusion_matrix(yte, pred)); print(clas
 2. 테스트 데이터 예측 + **RMSE**
 3. `life_prediction.csv`(`equipment_id, predicted_life`) + 실제 vs 예측 그래프 저장
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `LinearRegression` — 회귀 모델  
   ↳ **언제**: 타깃이 숫자이고 지문이 선형회귀를 지정했을 때.
 - `mean_squared_error → RMSE` — 회귀 평가(RMSE = MSE의 제곱근)  
   ↳ **언제**: 회귀 평가. RMSE는 작을수록 좋음. 시험 환경에선 `np.sqrt(mean_squared_error)`.
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: X/y 나누기 → 분할 → 선형회귀 학습 → 예측 → RMSE 계산 → 결과·그래프 저장
+reg = LinearRegression().fit(Xtr, ytr)
+# 문법: 분류와 같은 틀. 모델.fit(학습 특징, 학습 정답). 정답 y가 숫자일 때 회귀.
+pred = reg.predict(Xte)
+
+rmse = np.sqrt(mean_squared_error(yte, pred))
+# 문법: mean_squared_error(실제, 예측) = MSE. np.sqrt(...) = 제곱근 → RMSE.
+# 과정: 오래된 환경에서는 squared=False 옵션이 없을 수 있어 np.sqrt를 쓴다. 작을수록 좋다.
+print(rmse, mean_absolute_error(yte, pred), r2_score(yte, pred))
+# 문법: MAE(평균 절대오차, 작을수록 좋음), R²(1에 가까울수록 좋음).
+
+pd.DataFrame({"equipment_id": df.loc[Xte.index, "equipment_id"], "predicted_life": pred}).to_csv("결과.csv", index=False)
+# 문법: pd.DataFrame({열이름: 값들, ...}) = 사전으로 표 만들기. 지문이 정한 열 이름 그대로.
+
+plt.scatter(yte, pred)
+plt.plot([yte.min(), yte.max()], [yte.min(), yte.max()], "r--")
+# 문법: plt.scatter(x, y) = 점. plt.plot([x1,x2],[y1,y2],"r--") = 빨간 점선 → 대각선(예측=실제).
+# 과정: 점들이 대각선에 가까울수록 예측이 정확하다.
+plt.xlabel("actual"); plt.ylabel("predicted"); plt.savefig("그래프.png"); plt.close()
+```
+
+**④ 코드**
 
 > **언제 쓰나**: 정답(타깃)이 **숫자**(수명, 점수)일 때. 지문이 모델을 지정하면 그것을 쓰고, 안 하면 `RandomForestRegressor`가 무난. 평가는 RMSE(작을수록 좋음).
 
@@ -754,12 +1097,31 @@ plt.xlabel("actual"); plt.ylabel("predicted"); plt.savefig("life_plot.png"); plt
 2. GradientBoosting 또는 RandomForest 다중 분류
 3. classification_report·confusion_matrix + `priority_prediction.csv`
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `GradientBoostingClassifier` — 다중분류 모델  
   ↳ **언제**: 3개 이상 클래스 분류. RandomForest와 같은 방식으로 `fit/predict`.
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 정답 글자 → 숫자 → 분할 → 학습 → 평가 → 예측값을 다시 글자로 → 저장
+le = LabelEncoder(); y = le.fit_transform(df["priority_level"])
+# 문법: 글자(A,B,C) 정답을 정수(0,1,2)로. 모델은 숫자 정답이 안전하다.
+
+m = GradientBoostingClassifier(random_state=42).fit(Xtr, ytr); p = m.predict(Xte)
+# 과정: RandomForest와 사용법이 똑같다(fit → predict). 3개 이상의 클래스도 그대로 된다.
+
+print(classification_report(yte, p, target_names=le.classes_))
+# 문법: target_names=le.classes_ = 0,1,2 대신 A,B,C 이름으로 표시.
+
+out = df.loc[Xte.index, ["weapon_id"]].copy()
+out["predicted"] = le.inverse_transform(p)
+# 문법: le.inverse_transform(숫자) = 정수를 원래 글자(A,B,C)로 되돌린다. 저장 파일엔 글자로 쓰는 것이 보통.
+out.to_csv("결과.csv", index=False)
+```
+
+**④ 코드**
 
 > **언제 쓰나**: 타깃 클래스가 3개 이상일 때. 문자 라벨은 `LabelEncoder`로 숫자로 바꾸고, 결과는 `inverse_transform`으로 되돌려 저장.
 
@@ -781,7 +1143,7 @@ out.to_csv("priority_prediction.csv", index=False)
 ## 세션 08. 비지도학습  
 [↑ 목차](#목차)
 
-**📘 개념 (세션 08)**
+**① 간단 개념 (세션 08)**
 
 | 방법 | 설명 |
 |---|---|
@@ -801,7 +1163,7 @@ out.to_csv("priority_prediction.csv", index=False)
 2. **StandardScaler → PCA 2차원** 후 산점도
 3. `groupby('cluster').mean()`으로 군집 특성 해석
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `KMeans(n_clusters=3)` — 군집화. 결과는 .labels_  
   ↳ **언제**: 정답 없이 N개 그룹으로 묶을 때. 군집 수는 지문이 정한다. 먼저 표준화.
@@ -810,7 +1172,40 @@ out.to_csv("priority_prediction.csv", index=False)
 - `silhouette_score` — 군집 분리 정도(−1~1, 클수록 좋음)  
   ↳ **언제**: 군집이 잘 나뉘었는지 점수로 확인(1에 가까울수록 좋음).
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 열 고르기 → 표준화 → KMeans → 군집 번호 붙이기 → 해석 → PCA 2차원 → 그래프
+feats = [c for c in df.columns if c != "soldier_id"]
+# 문법: [c for c in 열들 if 조건] = 조건에 맞는 것만 모은 리스트. 여기선 id를 뺀 모든 열.
+
+X = StandardScaler().fit_transform(df[feats])
+# 과정: 거리로 묶는 알고리즘(KMeans, PCA)은 열마다 크기가 다르면 편향되므로 먼저 표준화.
+
+km = KMeans(n_clusters=3, random_state=42, n_init=10).fit(X)
+# 문법: KMeans(n_clusters=묶을 개수).fit(X) = 정답(y) 없이 X만 넣는다. 개수는 지문이 정한다.
+df["cluster"] = km.labels_
+# 문법: km.labels_ = 각 행이 속한 군집 번호(0,1,2).
+
+print(silhouette_score(X, km.labels_))
+# 문법: 실루엣 점수(−1~1, 클수록 군집이 잘 나뉨).
+
+print(df.groupby("cluster")[feats].mean())
+# 과정: 군집별 평균을 보고 "이 군집은 ~가 높은 유형"이라고 해석한다.
+print(df["cluster"].value_counts().sort_index())
+# 문법: .value_counts() = 값별 개수. .sort_index() = 군집 번호 순으로 정렬.
+
+p = PCA(n_components=2).fit(X); Z = p.transform(X)
+# 문법: PCA(n_components=2).fit(X) = 2개 축을 찾는다. .transform(X) = 각 행을 2차원 좌표(Z)로.
+print(p.explained_variance_ratio_, p.components_)
+# 문법: explained_variance_ratio_ = 각 축이 설명하는 비율. components_ = 각 축에 각 열이 기여하는 정도.
+
+plt.scatter(Z[:, 0], Z[:, 1], c=df["cluster"], cmap="viridis")
+# 문법: Z[:, 0] = 모든 행의 첫 번째 열(PC1), Z[:, 1] = PC2. c= 값에 따라 색을 칠한다.
+plt.xlabel("PC1"); plt.ylabel("PC2"); plt.savefig("pca.png"); plt.close()
+```
+
+**④ 코드**
 
 > **언제 쓰나**: **정답 없이** 비슷한 것끼리 묶으라(군집)면 KMeans, 많은 열을 2차원으로 줄여 시각화하라면 PCA. 둘 다 먼저 `StandardScaler`로 표준화.
 
@@ -835,7 +1230,7 @@ plt.savefig("duty_pca_plot.png"); plt.close(); df.to_csv("duty_clusters.csv", in
 ## 세션 09. 이미지 처리 (OpenCV)  
 [↑ 목차](#목차)
 
-**📘 개념 (세션 09)**
+**① 간단 개념 (세션 09)**
 
 - **OpenCV**: 컴퓨터 비전·머신러닝 오픈소스 라이브러리. 실시간 이미지 처리 중심(이미지·영상 처리, 객체 탐지 등).
 - 학습 포인트: ① 이미지 읽고 처리 ② 윤곽선·도형 검출 ③ 객체 좌표 추출·데이터화
@@ -852,13 +1247,39 @@ plt.savefig("duty_pca_plot.png"); plt.close(); df.to_csv("duty_clusters.csv", in
 1. 모든 이미지를 **256×256 리사이즈 → 흑백 → 평균 밝기**
 2. `brightness_result.csv` 저장, 가장 밝은 파일명 출력
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `cv2.imread(경로)` — 이미지 읽기(색 순서 BGR)
 - `cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)` — 흑백 변환
 - `cv2.resize(img, (256, 256))` — 크기 변경(가로, 세로)
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 폴더의 이미지를 하나씩 → 읽기 → 크기 통일 → 흑백 → 평균 밝기 기록 → 표로 저장
+rows = []
+# 문법: 빈 리스트. 결과를 한 줄씩 모아 두었다가 마지막에 표로 만든다.
+
+for f in sorted(os.listdir("폴더")):
+    # 문법: os.listdir(폴더) = 폴더 안 파일 이름 목록. sorted = 이름순 정렬(결과 순서 고정). for = 하나씩 반복.
+    if not f.lower().endswith((".png", ".jpg", ".jpeg")): continue
+    # 문법: .lower() = 소문자로. .endswith(튜플) = 그 확장자로 끝나는지. continue = 아니면 건너뛰기.
+    img = cv2.imread(f"폴더/{f}")
+    # 문법: cv2.imread(경로) = 이미지를 숫자 배열로. 색 순서는 BGR. f"..{f}" = 변수 값 넣은 문자열.
+    img = cv2.resize(img, (256, 256))
+    # 문법: cv2.resize(이미지, (가로, 세로)).
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # 문법: cv2.cvtColor(이미지, 변환코드) = 색 변환. BGR→흑백.
+    rows.append({"filename": f, "brightness": gray.mean()})
+    # 문법: gray.mean() = 모든 픽셀 평균 = 평균 밝기(0~255). {...} = 한 줄 기록, append = 리스트에 추가.
+
+b = pd.DataFrame(rows); b.to_csv("결과.csv", index=False)
+# 문법: 딕셔너리 리스트 → 표. 키가 열 이름이 된다.
+print(b.loc[b["brightness"].idxmax(), "filename"])
+# 문법: .idxmax() = 가장 큰 값의 행 번호 → .loc[행, "열"]로 그 행의 파일명.
+```
+
+**④ 코드**
 
 > **언제 쓰나**: "이미지 크기 통일/흑백/밝기"일 때. `imread`는 BGR이라 흑백은 `COLOR_BGR2GRAY`. 폴더의 이미지를 `listdir`로 순회.
 
@@ -886,7 +1307,7 @@ print(b.loc[b["brightness"].idxmax(), "filename"])
 2. `approxPolyDP`로 **사각형만** 필터링
 3. 이미지별 (x,y,width,height)와 사각형 수를 `rectangles.csv`에 저장
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `cv2.GaussianBlur(img, (5,5), 0)` — 흐리게(잡음 제거)
 - `cv2.Canny(img, 50, 150)` — 윤곽선(엣지) 검출
@@ -895,7 +1316,31 @@ print(b.loc[b["brightness"].idxmax(), "filename"])
 - `cv2.isContourConvex(ap)` — 볼록 도형인지
 - `cv2.boundingRect(ap)` — 외접 사각형 (x, y, w, h)
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 이미지마다 → 흑백 → 흐리게 → 윤곽선 → 윤곽 찾기 → 꼭짓점 4개인 것만 → 좌표 기록
+edges = cv2.Canny(cv2.GaussianBlur(gray, (5, 5), 0), 50, 150)
+# 문법: GaussianBlur(이미지, (5,5), 0) = 잡음 제거용 흐리게. Canny(이미지, 낮은기준, 높은기준) = 윤곽선(엣지)만 남기기.
+
+cnts, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+# 문법: findContours = 윤곽 목록(cnts)을 찾는다. 반환이 2개라 `_`는 안 쓰는 값. RETR_EXTERNAL = 가장 바깥 윤곽만.
+
+n = 0
+for c in cnts:
+    # 문법: 윤곽 하나씩 반복.
+    ap = cv2.approxPolyDP(c, 0.02 * cv2.arcLength(c, True), True)
+    # 문법: arcLength(윤곽, True) = 둘레 길이. approxPolyDP(윤곽, 허용오차, 닫힌도형) = 꼭짓점이 적은 도형으로 단순화.
+    # 과정: 허용오차를 둘레의 2%로. 사각형이면 꼭짓점 4개로 단순화된다.
+    if len(ap) == 4 and cv2.isContourConvex(ap):
+        # 문법: len(ap) = 꼭짓점 수. isContourConvex = 오목하지 않은 도형인지. 둘 다 만족해야 사각형.
+        x, y, w, h = cv2.boundingRect(ap); n += 1
+        # 문법: boundingRect = 도형을 감싸는 사각형의 (왼쪽 위 x, y, 가로, 세로). n += 1 = 개수 세기.
+        rows.append({"filename": f, "x": x, "y": y, "width": w, "height": h})
+pd.DataFrame(rows).to_csv("rectangles.csv", index=False)
+```
+
+**④ 코드**
 
 > **언제 쓰나**: "도형/윤곽/사각형 좌표"일 때. Blur → Canny → findContours → approxPolyDP로 꼭짓점이 4개인 것만 → boundingRect.
 
@@ -926,13 +1371,36 @@ pd.DataFrame(rows).to_csv("rectangles.csv", index=False)
 2. 클래스명과 (x1,y1,x2,y2) 추출
 3. `detections.csv`(`filename, class, x1, y1, x2, y2`), 사람/차량 수 출력
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `PIL.Image.open(경로)` — 이미지 열기
 - `torch.hub.load('ultralytics/yolov5','yolov5s', pretrained=True)` — YOLOv5 모델 불러오기
 - `results.pandas().xyxy[0]` — 탐지 결과 표(`xmin ymin xmax ymax confidence class name`)
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: YOLO 모델 불러오기 → 이미지마다 탐지 → 결과 표의 행을 한 줄씩 기록 → 저장 → 개수 세기
+model = torch.hub.load("ultralytics/yolov5", "yolov5s", pretrained=True)
+# 문법: torch.hub.load(저장소, 모델이름) = 사전학습 YOLO 불러오기. 처음엔 인터넷이 필요.
+
+img = cv2.imread(경로)[:, :, ::-1]
+# 문법: [:, :, ::-1] = 색 채널 순서를 뒤집는다(BGR → RGB). 모델은 RGB를 기대.
+
+d = model(img).pandas().xyxy[0]
+# 문법: model(이미지) = 탐지 실행. .pandas().xyxy[0] = 결과를 표로(xmin,ymin,xmax,ymax,confidence,class,name).
+
+for _, r in d.iterrows():
+    # 문법: .iterrows() = 표를 한 행씩. (행 번호, 행) 중 번호는 안 쓰므로 `_`.
+    rows.append({"filename": f, "class": r["name"], "x1": r.xmin, "y1": r.ymin, "x2": r.xmax, "y2": r.ymax})
+    # 과정: 지문이 정한 열 이름(x1,y1,x2,y2)으로 바꿔 담는다.
+
+det = pd.DataFrame(rows); det.to_csv("detections.csv", index=False)
+print((det["class"] == "person").sum(), det["class"].isin(["car", "truck", "bus"]).sum())
+# 문법: (열 == 값).sum() = 개수. .isin([여러 값]) = 목록에 있는 것이면 True.
+```
+
+**④ 코드**
 
 > **언제 쓰나**: "사람/차량 같은 **객체 탐지**"일 때. 결과 표(`xyxy[0]`)의 `name`으로 클래스를 세고 좌표를 csv로 저장. 인터넷이 막히면 YOLOv8 방식 사용.
 
@@ -988,7 +1456,7 @@ print(model.names)                      # {0: 'person', 2: 'car', 7: 'truck', ..
 ## 세션 10. 이미지 분류·OCR·영상  
 [↑ 목차](#목차)
 
-**📘 개념 (세션 10)**
+**① 간단 개념 (세션 10)**
 
 - 탐지 결과를 **통계화**(클래스별 빈도) → `Counter`, 상위 N개 막대그래프
 - **OCR**: 이미지 속 글자 인식(`easyocr.Reader`, `readtext`), 정규식 `re`로 한글·영문·숫자만 추출
@@ -1006,12 +1474,30 @@ print(model.names)                      # {0: 'person', 2: 'car', 7: 'truck', ..
 2. 클래스별 **전체 빈도**를 `object_count.csv`에
 3. **상위 3개** 막대그래프 `top3_objects.png`
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `[f for f in os.listdir(d) if f.lower().endswith(('.jpg','.png','.jpeg'))]` — 폴더에서 이미지 파일만 모으기
 - `collections.Counter(리스트)` / `.most_common(3)` — 빈도 세기 / 상위 3개
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 클래스 이름 목록 → 빈도 세기 → 표로 정렬해 저장 → 상위 3개 막대그래프
+cnt = Counter(det["class"])
+# 문법: Counter(목록) = 값별 개수를 센 사전 형태. (from collections import Counter)
+
+pd.DataFrame(cnt.items(), columns=["class", "count"]).sort_values("count", ascending=False).to_csv("object_count.csv", index=False)
+# 문법: cnt.items() = (이름, 개수) 쌍들. columns=로 열 이름 지정. sort_values(열, ascending=False) = 내림차순.
+
+top3 = cnt.most_common(3)
+# 문법: .most_common(N) = 개수가 많은 순서로 (이름, 개수) 상위 N개 리스트.
+
+plt.bar([k for k, _ in top3], [v for _, v in top3])
+# 문법: plt.bar(이름들, 값들) = 막대그래프. 컴프리헨션으로 이름 목록(k)과 개수 목록(v)을 따로 뽑는다.
+plt.title("Top3 objects"); plt.savefig("top3_objects.png"); plt.close()
+```
+
+**④ 코드**
 
 > **언제 쓰나**: "탐지된 객체의 빈도/상위 N개"일 때 `Counter`(`most_common(N)`) 후 막대그래프.
 
@@ -1034,12 +1520,29 @@ plt.bar([k for k, _ in top3], [v for _, v in top3]); plt.title("Top3 objects"); 
 2. **정규식**으로 한글·영문·숫자만 남김
 3. `supply_info.csv` 저장
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `easyocr.Reader(['ko','en'])` / `readtext(경로)` — 글자 인식 모델 / 인식 실행 → (좌표, 글자, 신뢰도)
 - `re.match(r'^[가-힣A-Za-z0-9]+$', text)` — 정규식으로 한글·영문·숫자만 통과
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: OCR 모델 만들기 → 이미지마다 글자 읽기 → 조건에 맞는 글자만 → 표로 저장
+reader = easyocr.Reader(["ko", "en"], gpu=False)
+# 문법: easyocr.Reader(언어 목록, gpu=False) = 한글+영어 인식 모델. 첫 실행 때 모델을 내려받아 오래 걸린다.
+
+for bbox, text, conf in reader.readtext(경로):
+    # 문법: .readtext(이미지경로) = [(글자 위치, 글자, 신뢰도), ...]. for에서 3개를 한 번에 풀어 받는다.
+    if re.match(r"^[가-힣A-Za-z0-9\s]+$", text):
+        # 문법: re.match(패턴, 글자) = 패턴에 맞으면 결과, 아니면 None(False).
+        # 문법: ^ 시작, $ 끝, [가-힣A-Za-z0-9\s] = 한글·영문·숫자·공백 중 하나, + = 1개 이상.
+        # 과정: 처음부터 끝까지 전부 허용 글자로만 이루어진 것만 통과(특수문자가 섞이면 제외).
+        rows.append({"filename": f, "text": text, "conf": round(conf, 3)})
+pd.DataFrame(rows).to_csv("supply_info.csv", index=False)
+```
+
+**④ 코드**
 
 > **언제 쓰나**: 이미지 속 **글자를 읽어라(OCR)**일 때. `Reader(['ko','en'])` + `readtext`, 특수문자 걸러내라면 정규식 `re.match`.
 
@@ -1065,12 +1568,39 @@ pd.DataFrame(rows).to_csv("supply_info.csv", index=False)
 2. 각 프레임 YOLO 탐지
 3. `drone_detection.csv`(`frame_number, class, x1, y1, x2, y2`) + 프레임별 개수 시계열 그래프
 
-**활용 함수 (PPT '활용 코드 정리')**
+**② 함수 정리 (PPT '활용 코드 정리')**
 
 - `cv2.VideoCapture(경로)` / `isOpened()` / `read()` — 영상 열기 / 열렸는지 / 프레임 한 장 읽기(`ok, frame`)
 - `cap.get(cv2.CAP_PROP_FPS)` — 초당 프레임 수
 
-**코드**
+**③ 코드 설명 (줄마다 문법·과정)**
+
+```python
+# 과정: 영상 열기 → 초당 프레임 수 → 한 프레임씩 읽기 → 1초마다 하나만 저장
+cap = cv2.VideoCapture("영상.mp4")
+# 문법: VideoCapture(경로) = 영상을 열어 프레임을 읽을 수 있게 한다.
+assert cap.isOpened(), "영상을 열 수 없음"
+# 문법: assert 조건, 메시지 = 조건이 거짓이면 오류로 멈춘다. isOpened() = 잘 열렸는지.
+
+fps = int(round(cap.get(cv2.CAP_PROP_FPS))) or 30
+# 문법: cap.get(CAP_PROP_FPS) = 초당 프레임 수. round → int로 정수. `or 30` = 0이면 30으로.
+
+i, frames = 0, []
+# 문법: i는 프레임 번호, frames는 저장할 프레임 목록.
+while True:
+    # 문법: while True = 멈추라고 할 때까지 반복.
+    ok, frame = cap.read()
+    # 문법: .read() = 다음 프레임 한 장. ok = 읽기 성공 여부, frame = 이미지.
+    if not ok: break
+    # 과정: 영상이 끝나면 ok가 False → 반복 종료.
+    if i % fps == 0: frames.append((i, frame))
+    # 문법: i % fps = 나머지. 0이면 fps 프레임마다 한 번 = 1초 간격. (번호, 이미지) 쌍으로 저장.
+    i += 1
+cap.release()
+# 문법: 영상 닫기. 이후 frames의 각 이미지에 YOLO를 적용해 결과를 저장한다.
+```
+
+**④ 코드**
 
 > **언제 쓰나**: 영상(`.mp4`)을 "프레임 단위로 분석/일정 간격 추출"일 때. `VideoCapture` 루프에서 `i % fps == 0`인 프레임만 처리.
 
