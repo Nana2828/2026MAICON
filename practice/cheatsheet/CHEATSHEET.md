@@ -1009,11 +1009,42 @@ print(rmse, mean_absolute_error(yte, pred), r2_score(yte, pred))
 pd.DataFrame({"equipment_id": df.loc[Xte.index, "equipment_id"], "predicted_life": pred}).to_csv("결과.csv", index=False)
 # 문법: pd.DataFrame({열이름: 값들, ...}) = 사전으로 표 만들기. 지문이 정한 열 이름 그대로.
 
-plt.scatter(yte, pred)
-plt.plot([yte.min(), yte.max()], [yte.min(), yte.max()], "r--")
-# 문법: plt.scatter(x, y) = 점. plt.plot([x1,x2],[y1,y2],"r--") = 빨간 점선 → 대각선(예측=실제).
-# 과정: 점들이 대각선에 가까울수록 예측이 정확하다.
-plt.xlabel("actual"); plt.ylabel("predicted"); plt.savefig("그래프.png"); plt.close()
+# ── 실제 vs 예측 시각화 (한 셀에서 만들기 → 그리기 → 저장 → 닫기) ──
+x = range(len(yte))
+# 문법: len(yte) = 테스트 데이터 개수. range(n) = 0, 1, 2, … n-1. 샘플 번호를 x축으로 쓴다.
+
+plt.figure(figsize=(10, 6))
+# 문법: 새 그림을 만들고 크기를 정한다. (가로, 세로)
+
+plt.plot(x, yte.values, label="Actual", marker="o")
+plt.plot(x, pred, label="Predicted", marker="x")
+# 문법: plt.plot(x값, y값, label=범례 이름, marker=점 모양) = 선 그래프.
+#   yte.values = 인덱스 없이 값만. label = 범례(legend)에 표시될 이름.
+
+plt.xlabel("Sample Index")
+plt.ylabel("Remaining Life (days)")
+plt.title("Actual vs Predicted Equipment Life")
+# 문법: x축·y축 이름과 제목. 한글은 깨질 수 있으니 영어로.
+
+plt.legend()          # 문법: 범례 표시. 위의 label이 있어야 나온다.
+plt.grid(True)        # 문법: 격자선 표시.
+plt.tight_layout()
+plt.savefig("그래프.png")   # 문법: 파일로 저장. 파일 이름은 지문 그대로. show보다 먼저.
+plt.show()                  # 화면에 보여 준다.
+plt.close()                 # 마지막에 닫는다.
+
+# ── 점 그래프 대안 (샘플이 많아 선이 빽빽할 때) ──
+# plt.scatter(yte, pred)
+# plt.plot([yte.min(), yte.max()], [yte.min(), yte.max()], "r--")   # 빨간 점선 = 예측이 실제와 같은 선
+# plt.xlabel("Actual"); plt.ylabel("Predicted")
+```
+
+**id를 함께 저장해야 할 때: 분할 때 id도 같이 나누는 방법**
+
+```python
+Xtr, Xte, ytr, yte, ids_train, ids_test = train_test_split(X, y, df["equipment_id"], test_size=0.2, random_state=42)
+# 문법: train_test_split은 배열을 여러 개 받아 같은 행 기준으로 나눈다. 결과는 (학습, 테스트) 쌍이 배열 순서대로 돌아온다.
+pd.DataFrame({"equipment_id": ids_test.values, "predicted_life": pred}).to_csv("결과.csv", index=False)
 ```
 
 **④ 코드**
@@ -1027,8 +1058,14 @@ Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.2, random_state=42)
 reg = LinearRegression().fit(Xtr, ytr); pred = reg.predict(Xte)
 rmse = np.sqrt(mean_squared_error(yte, pred)); print(rmse, mean_absolute_error(yte, pred), r2_score(yte, pred))
 pd.DataFrame({"equipment_id": df.loc[Xte.index, "equipment_id"], "predicted_life": pred}).to_csv("life_prediction.csv", index=False)
-plt.scatter(yte, pred); plt.plot([yte.min(), yte.max()], [yte.min(), yte.max()], "r--")
-plt.xlabel("actual"); plt.ylabel("predicted"); plt.savefig("life_plot.png"); plt.close()
+x = range(len(yte))
+plt.figure(figsize=(10, 6))
+plt.plot(x, yte.values, label="Actual", marker="o")
+plt.plot(x, pred, label="Predicted", marker="x")
+plt.xlabel("Sample Index"); plt.ylabel("Remaining Life (days)")
+plt.title("Actual vs Predicted Equipment Life")
+plt.legend(); plt.grid(True); plt.tight_layout()
+plt.savefig("life_plot.png"); plt.show(); plt.close()
 ```
 
 ### 07-3. 정비 시급성 다중분류  
