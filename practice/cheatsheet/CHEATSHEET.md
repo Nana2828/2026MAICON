@@ -184,6 +184,16 @@ df.to_csv("결과.csv", index=False)
 # 문법: .to_csv("파일명") = 표를 csv로 저장. index=False = 0,1,2… 번호 열은 쓰지 않는다.
 ```
 
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `"파일.csv"` | 지문의 입력 파일 이름 |
+| `"col_a"` | 평균으로 채울 열 이름 (지문) |
+| `"col_b"` | 중앙값으로 채울 열 이름 (지문) |
+| `mean() / median()` | 지문이 정한 채우기 값 (평균 / 중앙값 / 0 등) |
+| `"결과.csv"` | 지문이 정한 저장 파일 이름 |
+
 **④ 코드**
 
 ```python
@@ -247,6 +257,15 @@ df_iqr = df[df["col_a"].between(q1 - 1.5*iqr, q3 + 1.5*iqr)]
 # 문법: .between(하한, 상한) = 하한~상한 사이면 True (양 끝 포함).
 # 과정: 정상 범위 = Q1-1.5·IQR ~ Q3+1.5·IQR. 이 범위 안의 행만 남긴다.
 ```
+
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `cols` | 이상치를 볼 열 이름들 (지문) |
+| `<= 3` | 지문의 기준 값 (Z-score 3 초과면 3) |
+| `"col_a"(IQR)` | IQR로 볼 열 이름 (지문이 IQR/사분위일 때만) |
+| `"결과.csv"` | 지문이 정한 저장 파일 이름 |
 
 **④ 코드**
 
@@ -315,6 +334,16 @@ merged = merged.dropna()
 
 merged.to_csv("결과.csv", index=False)
 ```
+
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `"a.csv", "b.csv"` | 합칠 두 파일 이름 (지문) |
+| `on=["time", "post_id"]` | 두 표에 공통으로 있는 기준 열 (지문) |
+| `how="inner"` | 지문에 맞는 합치기 방식 (양쪽 모두 / 왼쪽 기준 left) |
+| `"col"` | "error" 같은 글자가 섞인 숫자 열 (지문) |
+| `"결과.csv"` | 지문이 정한 저장 파일 이름 |
 
 **④ 코드**
 
@@ -399,6 +428,15 @@ print(scaled.min(), scaled.max())
 # 과정: 각 열의 최솟값이 0, 최댓값이 1인지 확인하는 출력. StandardScaler는 평균 0, 표준편차 1.
 ```
 
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `cols` | 정규화할 열 이름들 (지문). df.columns로 실제 이름 확인 |
+| `MinMaxScaler` | 지문이 0~1 정규화면 이 도구, 표준화면 StandardScaler |
+| `"_scaled"` | 정규화한 열에 붙일 이름 (지문이 정했으면 그것) |
+| `"결과.csv"` | 지문이 정한 저장 파일 이름 |
+
 **④ 코드**
 
 ```python
@@ -452,6 +490,15 @@ df = pd.get_dummies(df, columns=["col_cat"], dtype=int)
 df.to_csv("결과.csv", index=False)
 ```
 
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `"col_text"` | Label Encoding할 열 (지문) |
+| `"col_enc"` | 인코딩 결과를 담을 열 이름 (지문) |
+| `"col_cat"` | One-Hot 인코딩할 열 (지문) |
+| `"결과.csv"` | 지문이 정한 저장 파일 이름 |
+
 **④ 코드**
 
 ```python
@@ -495,6 +542,14 @@ df[~df["exists"]].to_csv("missing.csv", index=False)
 # 문법: ~ = True/False 뒤집기 → 존재하지 않는 것만 저장.
 # 주의: 경로가 상대경로면 노트북 위치 기준이다. 파일 위치가 다르면 전부 False로 나온다.
 ```
+
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `"file_path"` | 경로가 들어 있는 열 이름 (지문) |
+| `"exists"` | 존재 여부를 담을 열 이름 (지문) |
+| `"valid.csv", "missing.csv"` | 있는 것 / 없는 것을 저장할 파일 이름 (지문) |
 
 **④ 코드**
 
@@ -565,6 +620,16 @@ plt.tight_layout(); plt.savefig("그래프.png"); plt.close()
 # 문법: tight_layout = 글자 잘림 방지. savefig = 파일 저장(show보다 먼저). close = 그림 닫기.
 ```
 
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `"timestamp"` | 날짜·시각 열 이름 (지문) |
+| `"col"` | 집계할 값 열 이름 (지문) |
+| `"H"` | 지문의 주기 (시간 H, 일 D, 주 W, 월 M) |
+| `.sum()` | 지문의 집계 방법 (합계 sum / 평균 mean) |
+| `"결과.csv", "그래프.png"` | 지문이 정한 파일 이름 |
+
 **④ 코드**
 
 ```python
@@ -617,6 +682,15 @@ df.to_csv("결과.csv", index=False)
 print(df[["water", "ration"]].sum())
 # 문법: df[[열1, 열2]].sum() = 열별 합계. 지문의 "항목별 총합 출력".
 ```
+
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `"파일.json"` | 지문의 JSON 파일 이름 |
+| `"items.water" 등` | json_normalize 후 나온 열 이름 → 지문이 요구한 이름으로 |
+| `"water", "ration"` | 합계를 출력할 열 이름 (지문) |
+| `"결과.csv"` | 지문이 정한 저장 파일 이름 |
 
 **④ 코드**
 
@@ -700,6 +774,15 @@ all_row = df[cols].agg(["mean", "std"]).T          # .T = 행·열 뒤집기
 # 과정: concat(axis=0) 뒤에 reset_index()로 이름을 열로 내리고 저장.
 ```
 
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `cols` | 통계를 낼 열 이름들 (지문) |
+| `"unit"` | 그룹 기준 열 (부대, 유형 등) |
+| `["mean", "median", "std"]` | 지문이 요구한 통계 (최빈값은 mode().iloc[0]) |
+| `"overall.csv", "by_unit.csv"` | 지문이 정한 저장 파일 이름 |
+
 **④ 코드**
 
 ```python
@@ -774,6 +857,16 @@ sns.heatmap(s.select_dtypes("number").corr(), annot=True, cmap="coolwarm", vmin=
 # 문법: annot=True = 칸에 숫자 표시. vmin/vmax = 색 범위 고정. cmap = 색상표.
 plt.tight_layout(); plt.savefig("corr.png"); plt.close()
 ```
+
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `cols, df` | 그릴 열 이름들과 읽어 둔 표의 변수 이름 |
+| `bins=15` | 구간 수 (지문이 정했으면 그 값) |
+| `"plots"` | 지문이 정한 저장 폴더 이름 |
+| `"plots/dist.png" 등` | 지문이 정한 그림 파일 이름 |
+| `x="x열", y="y열", hue="그룹열"` | 산점도에 쓸 열 이름 (hue는 그룹 색 구분이 필요할 때만) |
 
 **④ 코드**
 
@@ -856,6 +949,16 @@ pt = pd.pivot_table(m, index="unit", values=score, aggfunc="mean")
 # 문법: pivot_table(표, index=행으로 쓸 열, values=값으로 쓸 열들, aggfunc=집계 방법) = 요약표.
 # 과정: groupby().mean()과 결과가 비슷하다. 지문이 pivot_table이라고 하면 이걸 쓴다.
 ```
+
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `"col_a", "col_b"` | 상관계수를 볼 두 열 (지문) |
+| `"col_x", "col_y"` | 기준(높고 낮음)이 되는 열과 평균을 비교할 열 (지문) |
+| `th = median()` | 지문이 준 기준 값이 있으면 그 값 (없으면 중앙값/평균) |
+| `"unit", score` | 그룹 기준 열과 점수 열들 (지문) |
+| `"avg.csv"` | 지문이 정한 저장 파일 이름 |
 
 **④ 코드**
 
@@ -959,6 +1062,18 @@ print(accuracy_score(yte, pred)); print(confusion_matrix(yte, pred)); print(clas
 # 문법: 평가함수(실제, 예측) 순서. 평가는 항상 "테스트 정답 vs 테스트 예측".
 ```
 
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `"status"` | 정답(분류할 범주) 열 (지문) |
+| `"적합"` | 1로 둘 값 (지문의 대응) |
+| `["feat_a", "feat_b"]` | 특징 열들. 정답 열과 id 열은 넣지 않는다 |
+| `test_size, random_state` | 지문 값 (8:2면 0.2, 값이 없으면 42) |
+| `["soldier_id"]` | id 열 이름 (지문) |
+| `"actual", "pred"` | 지문이 정한 결과 열 이름 |
+| `"결과.csv"` | 지문이 정한 저장 파일 이름 |
+
 **④ 코드**
 
 ```python
@@ -1047,6 +1162,16 @@ Xtr, Xte, ytr, yte, ids_train, ids_test = train_test_split(X, y, df["equipment_i
 pd.DataFrame({"equipment_id": ids_test.values, "predicted_life": pred}).to_csv("결과.csv", index=False)
 ```
 
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `["feat_a", "feat_b", ...]` | 수명 예측에 쓰는 특징 열들 |
+| `"life"` | 예측할 수명(정답) 열 |
+| `"equipment_id", "predicted_life"` | 지문이 정한 id 열과 예측 열 이름 |
+| `"Remaining Life (days)"` | y축 이름 (지문에 맞게, 영어) |
+| `"결과.csv", "그래프.png"` | 지문이 정한 저장 파일 이름 |
+
 **④ 코드**
 
 ```python
@@ -1100,6 +1225,16 @@ out["predicted"] = le.inverse_transform(p)
 # 문법: le.inverse_transform(숫자) = 정수를 원래 글자(A,B,C)로 되돌린다. 저장 파일엔 글자로 쓰는 것이 보통.
 out.to_csv("결과.csv", index=False)
 ```
+
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `"priority_level"` | 정답(클래스) 열 (지문) |
+| `["feat_a", ...]` | 특징 열들. 정답 열은 넣지 않는다 |
+| `GradientBoostingClassifier` | 지문이 정한 모델 (RandomForestClassifier도 같은 방식) |
+| `["weapon_id"]` | id 열 이름 (지문) |
+| `"결과.csv"` | 지문이 정한 저장 파일 이름 |
 
 **④ 코드**
 
@@ -1181,6 +1316,16 @@ plt.scatter(Z[:, 0], Z[:, 1], c=df["cluster"], cmap="viridis")
 plt.xlabel("PC1"); plt.ylabel("PC2"); plt.savefig("pca.png"); plt.close()
 ```
 
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `"soldier_id"` | 특징에서 뺄 id 열 (지문) |
+| `n_clusters=3` | 지문의 군집 수 |
+| `n_components=2` | 지문의 차원 수 |
+| `random_state=42` | 지문 값 (없으면 42) |
+| `"duty_clusters.csv", "duty_pca_plot.png"` | 지문이 정한 파일 이름 |
+
 **④ 코드**
 
 ```python
@@ -1251,6 +1396,15 @@ print(b.loc[b["brightness"].idxmax(), "filename"])
 # 문법: .idxmax() = 가장 큰 값의 행 번호 → .loc[행, "열"]로 그 행의 파일명.
 ```
 
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `"폴더"` | 이미지 폴더 경로 (지문) |
+| `(256, 256)` | 지문이 정한 리사이즈 크기 (가로, 세로) |
+| `"filename", "brightness"` | 지문이 정한 열 이름 |
+| `"결과.csv"` | 지문이 정한 저장 파일 이름 |
+
 **④ 코드**
 
 ```python
@@ -1308,6 +1462,15 @@ for c in cnts:
 pd.DataFrame(rows).to_csv("rectangles.csv", index=False)
 ```
 
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `image_dir, image_files` | 이미지 폴더와 파일 목록 (지문) |
+| `(5, 5), 50, 150` | 지문이 정했으면 그 값 (예시 노트북은 이 값) |
+| `"x", "y", "width", "height"` | 지문이 정한 열 이름 |
+| `"rectangles.csv"` | 지문이 정한 저장 파일 이름 |
+
 **④ 코드**
 
 ```python
@@ -1363,6 +1526,16 @@ det = pd.DataFrame(rows); det.to_csv("detections.csv", index=False)
 print((det["class"] == "person").sum(), det["class"].isin(["car", "truck", "bus"]).sum())
 # 문법: (열 == 값).sum() = 개수. .isin([여러 값]) = 목록에 있는 것이면 True.
 ```
+
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `'yolov5s'` | 지문이 정한 모델 이름 |
+| `이미지 경로` | 지문의 이미지 폴더 (예: ./images/surv_imgs/) |
+| `['person'], ['car', 'truck', 'bus']` | 지문이 세라는 클래스 이름 (사람/차량 등) |
+| `"x1", "y1", "x2", "y2"` | 지문이 정한 열 이름 |
+| `"detections.csv"` | 지문이 정한 저장 파일 이름 |
 
 **④ 코드**
 
@@ -1457,6 +1630,15 @@ plt.bar([k for k, _ in top3], [v for _, v in top3])
 plt.title("Top3 objects"); plt.savefig("top3_objects.png"); plt.close()
 ```
 
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `det["class"]` | 클래스 이름이 들어 있는 열 (탐지 결과 표) |
+| `"class", "count"` | 지문이 정한 열 이름 |
+| `most_common(3)` | 지문의 상위 개수 (예: 3) |
+| `"object_count.csv", "top3_objects.png"` | 지문이 정한 파일 이름 |
+
 **④ 코드**
 
 ```python
@@ -1497,6 +1679,16 @@ for bbox, text, conf in reader.readtext(경로):
         rows.append({"filename": f, "text": text, "conf": round(conf, 3)})
 pd.DataFrame(rows).to_csv("supply_info.csv", index=False)
 ```
+
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `["ko", "en"]` | 읽을 언어 (지문) |
+| `"images/supplies_imgs"` | 이미지 폴더 (지문) |
+| `정규식 패턴` | 남길 글자 조건 (지문이 한글·영문·숫자만이면 예시 그대로) |
+| `"filename", "text"` | 지문이 정한 열 이름 |
+| `"supply_info.csv"` | 지문이 정한 저장 파일 이름 |
 
 **④ 코드**
 
@@ -1551,6 +1743,15 @@ while True:
 cap.release()
 # 문법: 영상 닫기. 이후 frames의 각 이미지에 YOLO를 적용해 결과를 저장한다.
 ```
+
+**바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
+
+| 코드 속 | 내 문제에서는 |
+|---|---|
+| `"영상.mp4"` | 영상 파일 경로 (지문) |
+| `fps` | 1초 간격이면 그대로. 지문이 다른 간격이면 i % 간격 == 0 |
+| `frame_number, class, x1, y1, x2, y2` | 지문이 정한 열 이름 |
+| `저장 파일 이름` | 지문이 정한 이름 |
 
 **④ 코드**
 
