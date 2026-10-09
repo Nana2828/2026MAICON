@@ -1,0 +1,41 @@
+# 2026 국방 AI 경진대회 예선 연습
+
+예선 형식: Jupyter(Python3), 3문항 / 90분, 결과 csv 제출, GPU 없음, 검색·AI 보조 도구 사용 가능
+(단, 문제 지문·제공 데이터를 외부 AI에 그대로 입력해 정답을 생성하는 것은 금지).
+
+## 구성
+| 파일 | 내용 |
+|---|---|
+| `notebooks/00_jupyter_basics.ipynb` | Jupyter 입문, 단축키, 시험 당일 루틴 |
+| `notebooks/01_tabular_modeling.ipynb` | 표 데이터 전처리·CV·베이스라인 제출 |
+| `notebooks/02_timeseries_sensor.ipynb` | 센서/시계열 윈도우 특징, 시간순 검증 |
+| `notebooks/03_image_transfer_yolo.ipynb` | CPU 전이학습(ResNet18 임베딩), YOLO 사용법 |
+| `notebooks/04_text_classification.ipynb` | TF-IDF 텍스트 분류 |
+| `mock_exam/mock_session11.ipynb`, `mock_session12.ipynb` | 공식 종합문제풀이(1)(2)를 90분 3문제 모의고사로 재구성(지문·요구사항·자가 점검 셀, 풀이 코드는 비움) |
+| `common/utils.py` | 인코딩 자동판별 csv 로드, 제출 파일 검증 등 |
+
+## 데이터 (저장소에 올리지 않음)
+`practice/data/`에 **직접** 내려받아 넣으세요. `.gitignore`가 데이터와 csv 커밋을 막습니다.
+- 공식 교육자료: maicon.kr 예선 안내의 `DST_Training_Materials.zip` (교안·실습파일)
+- KAMP 공개 데이터셋: kamp-ai.kr 에서 로그인 후 다운로드
+- 대회 본 데이터·문제·사전 테스트 체험 데이터는 **절대 올리지 마세요** (공유 금지 규정).
+
+데이터 파일이 없으면 노트북은 합성 데모 데이터로 흐름만 실행됩니다.
+각 노트북 첫 CONFIG 셀의 파일명·타깃 컬럼만 바꿔 쓰세요.
+
+## 설치
+```
+pip install -r practice/requirements.txt
+# 이미지/YOLO 연습 시: pip install torch torchvision ultralytics
+```
+
+## 모의고사 사용법
+1. 공식 실습파일의 `session11/`, `session12/` 폴더를 `practice/data/`에 복사합니다(저장소에는 올라가지 않음).
+2. `practice/mock_exam/`에서 노트북을 열고 90분 타이머를 맞춘 뒤, 공식 풀이를 보지 않고 풉니다.
+3. 각 문제 아래 `check(...)` 셀로 결과 파일 형식을 점검하고, 끝나면 공식 풀이와 비교합니다.
+4. 문제 2(YOLO)는 `torch.hub`가 막히면 `ultralytics`(YOLOv8) 방식을 쓰세요.
+
+## 치트시트 (시험 중 다른 탭에서 참고)
+- **`cheatsheet/CHEATSHEET.md` 한 파일**에 전부 통합되어 있습니다: 세션 01~10 순서대로 **개념 → 문제별 지문 요점 → PPT '활용 코드 정리' 함수(뜻·언제) → 복붙 코드**.
+- 맨 위 **지문 키워드로 찾기**·**목차**·**함수 빠른 찾기**의 링크를 눌러 해당 문제로 이동합니다(GitHub에서 열 때 동작).
+- 이전 분리본(`CONCEPTS.md`, `FUNCTIONS.md`, `SUMMARY.md`, 예전 `CHEATSHEET_old.md`)은 `cheatsheet/archive/`에 보관했습니다.
