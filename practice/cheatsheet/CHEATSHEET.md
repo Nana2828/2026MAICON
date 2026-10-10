@@ -806,6 +806,7 @@ df[cols].mode().iloc[0]
 - 도구: **matplotlib**, **seaborn**, plotly
 - 차트: 막대(bar), 히스토그램, 박스플롯, 산점도, 파이 등
   - 히스토그램 = 분포 / 박스플롯 = 분포와 이상치 / 산점도 = 두 변수 관계
+- **그림 하나는 한 셀에서**: 그림 만들기(`plt.figure`/`plt.subplots`) → 그리기 → 제목·축 → `plt.savefig` → `plt.show()` → `plt.close()`. 셀을 나누면 빈 그림이 저장된다. 제목·축은 영어.
 - **상관계수**(피어슨, `corr()`): −1~1. 부호는 방향, 절댓값이 클수록 관계가 강함. **heatmap**으로 한 번에 시각화.
 
 ### 05-1. 분포·이상치 / 산점도·상관 / 상관 heatmap  
@@ -833,55 +834,75 @@ df[cols].mode().iloc[0]
 **③ 코드 설명 (줄마다 문법·과정)**
 
 ```python
-# 과정: 폴더 만들기 → 여러 그래프를 한 그림에 그리기 → 저장 / 산점도 / 상관 heatmap
-fig, ax = plt.subplots(2, 3, figsize=(14, 7))
-# 문법: plt.subplots(행, 열) = 그림 한 장 안에 2×3 칸을 만든다. ax[행, 열]로 칸을 고른다.
-
-for i, c in enumerate(cols):
-    # 문법: enumerate(리스트) = (번호, 값)을 차례로. i = 0,1,2 → 칸의 열 번호, c = 열 이름.
-    ax[0, i].hist(df[c], bins=15); ax[0, i].set_title(f"{c} hist")
-    # 문법: .hist(값, bins=구간 수) = 히스토그램(분포). f"{c} hist" = 문자열 안에 변수 값 넣기.
-    ax[1, i].boxplot(df[c]);       ax[1, i].set_title(f"{c} box")
-    # 문법: .boxplot(값) = 박스플롯(중앙값·사분위·이상치 점).
-
+# 과정: 폴더 만들기 → 그림 하나마다 "만들기 → 그리기 → 제목·축 → 저장 → 보기 → 닫기"를 한 셀에서
 os.makedirs("plots", exist_ok=True)
 # 문법: os.makedirs(폴더, exist_ok=True) = 폴더 만들기. 이미 있어도 오류 없음. savefig 전에 필요.
-plt.tight_layout(); plt.savefig("plots/dist.png"); plt.close()
 
+# ── 히스토그램 + 박스플롯 (칸을 나눠 한 그림에) ──
+fig, ax = plt.subplots(2, 3, figsize=(14, 7))
+# 문법: plt.subplots(행, 열) = 그림 한 장 안에 2×3 칸을 만든다. ax[행, 열]로 칸을 고른다.
+# 주의: subplots와 아래 for문, savefig는 반드시 같은 셀에 둔다. (셀이 끝나면 그림이 닫혀 빈 그림이 저장된다)
+for i, c in enumerate(cols):
+    # 문법: enumerate(리스트) = (번호, 값)을 차례로. i = 0,1,2 → 칸의 열 번호, c = 열 이름.
+    ax[0, i].hist(df[c], bins=15)
+    ax[0, i].set_title(f"{c} hist")
+    # 문법: ax[칸].hist(값, bins=구간 수) = 히스토그램. f"{c} hist" = 문자열 안에 변수 값 넣기.
+    ax[1, i].boxplot(df[c])
+    ax[1, i].set_title(f"{c} box")
+    # 문법: ax[칸].boxplot(값) = 박스플롯. 가로로 눕히려면 vert=False 또는 sns.boxplot(x=열, ax=칸).
+plt.tight_layout()
+plt.savefig("plots/dist.png")      # 저장이 먼저
+plt.show()                         # 화면 확인
+plt.close()                        # 마지막에 닫기
+
+# ── 산점도 (한 셀) ──
+plt.figure(figsize=(6, 5))
 sns.scatterplot(data=s, x="x열", y="y열", hue="그룹열")
-# 문법: sns.scatterplot(data=표, x=, y=) = 산점도. hue = 그룹별 색 구분(선택).
-plt.savefig("scatter.png"); plt.close()
+# 문법: sns.scatterplot(data=표, x=가로축 열, y=세로축 열, hue=색으로 나눌 열). x, y, hue 열은 data 표 안에 있어야 한다.
+plt.title("Scatter Plot"); plt.xlabel("x열"); plt.ylabel("y열")
+plt.tight_layout(); plt.savefig("scatter_plot.png"); plt.show(); plt.close()
 
-sns.heatmap(s.select_dtypes("number").corr(), annot=True, cmap="coolwarm", vmin=-1, vmax=1)
-# 문법: .select_dtypes("number") = 숫자 열만. .corr() = 열끼리 상관계수 표(−1~1).
-# 문법: annot=True = 칸에 숫자 표시. vmin/vmax = 색 범위 고정. cmap = 색상표.
-plt.tight_layout(); plt.savefig("corr.png"); plt.close()
+# ── 상관계수 행렬 + heatmap (한 셀) ──
+corr = s.select_dtypes("number").corr()
+# 문법: .select_dtypes("number") = 숫자 열만. .corr() = 열끼리 상관계수 표(−1~1, 대각선은 1).
+plt.figure(figsize=(10, 6))
+sns.heatmap(corr, annot=True, cmap="coolwarm", vmin=-1, vmax=1)
+# 문법: annot=True = 칸에 숫자 표시. cmap="coolwarm" = 파랑(음수)~빨강(양수). vmin/vmax = 색 범위 고정.
+plt.xticks(rotation=0)
+# 문법: x축 글자 각도. 0 = 가로, 90 = 세로, 45 = 비스듬히. heatmap을 그린 다음 줄에 쓴다.
+plt.title("Correlation Matrix")
+plt.tight_layout(); plt.savefig("corr.png"); plt.show(); plt.close()
 ```
 
 **바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
 
 | 코드 속 | 내 문제에서는 |
 |---|---|
-| `cols, df` | 그릴 열 이름들과 읽어 둔 표의 변수 이름 |
+| `cols, df, s` | 그릴 열 이름들과 읽어 둔 표의 변수 이름 |
 | `bins=15` | 구간 수 (지문이 정했으면 그 값) |
 | `"plots"` | 지문이 정한 저장 폴더 이름 |
-| `"plots/dist.png" 등` | 지문이 정한 그림 파일 이름 |
+| `"plots/dist.png" 등` | 지문이 정한 그림 파일 이름 (한 글자도 다르지 않게) |
 | `x="x열", y="y열", hue="그룹열"` | 산점도에 쓸 열 이름 (hue는 그룹 색 구분이 필요할 때만) |
+| `제목·축 이름` | 지문이 정했으면 그것으로, 아니면 영어 (한글은 깨질 수 있음) |
 
 **④ 코드**
 
 ```python
-df = pd.read_csv("fitness_result.csv"); cols = ["pushup_count", "run_time_2km(sec)", "situp_count"]
+os.makedirs("plots", exist_ok=True)
 fig, ax = plt.subplots(2, 3, figsize=(14, 7))
 for i, c in enumerate(cols):
     ax[0, i].hist(df[c], bins=15); ax[0, i].set_title(f"{c} hist")
-    ax[1, i].boxplot(df[c]);      ax[1, i].set_title(f"{c} box")
-plt.tight_layout(); os.makedirs("plots", exist_ok=True); plt.savefig("plots/dist.png"); plt.close()
+    ax[1, i].boxplot(df[c]);       ax[1, i].set_title(f"{c} box")
+plt.tight_layout(); plt.savefig("plots/dist.png"); plt.show(); plt.close()
 
-s = pd.read_csv("stress_factors.csv")
-sns.scatterplot(data=s, x="training_pressure", y="command_tension", hue="unit"); plt.savefig("scatter_plot.png"); plt.close()
+plt.figure(figsize=(6, 5))
+sns.scatterplot(data=s, x="training_pressure", y="command_tension", hue="unit")
+plt.title("Scatter Plot"); plt.tight_layout(); plt.savefig("scatter_plot.png"); plt.show(); plt.close()
+
+plt.figure(figsize=(10, 6))
 sns.heatmap(s.select_dtypes("number").corr(), annot=True, cmap="coolwarm", vmin=-1, vmax=1)
-plt.tight_layout(); plt.savefig("stress_correlation.png"); plt.close()
+plt.xticks(rotation=0); plt.title("Correlation Matrix")
+plt.tight_layout(); plt.savefig("stress_correlation.png"); plt.show(); plt.close()
 ```
 
 
@@ -1033,32 +1054,34 @@ pt = pd.pivot_table(m, index="unit", values=score, aggfunc="mean")
 **③ 코드 설명 (줄마다 문법·과정)**
 
 ```python
-# 과정: 정답 열 만들기 → X/y 나누기 → 학습/테스트 분할 → 학습 → 예측 → 결과 저장 → 평가 출력
+# 과정: 정답 인코딩 → X/y/id 나누기 → 학습·테스트 분할(id 함께) → 학습 → 예측 → 결과 저장 → 평가 출력
 df["y"] = (df["status"] == "적합").astype(int)
 # 문법: (열 == 값) = 각 행이 같은지 True/False. .astype(int) = True/False → 1/0.
-# 과정: 지문이 "적합=1, 부적합=0"이라고 했으니 이렇게 직접 지정. (LabelEncoder는 가나다 순이라 반대가 될 수 있다)
+# 과정: 지문이 "적합=1, 부적합=0"처럼 대응을 정했으면 이렇게 직접 지정한다. 정하지 않았으면 LabelEncoder(가나다 순 0,1,2…).
+#       map으로 했다면 .map({"부적합": 0, "적합": 1}). 쓰기 전 df["y"].isna().sum()이 0인지 확인.
 
-X = df[["col_a", "col_b"]]; y = df["y"]
-# 과정: X = 문제를 푸는 데 쓰는 특징(여러 열, 대괄호 2개), y = 맞혀야 할 정답(열 하나). 정답 열은 X에서 뺀다.
+X = df[["col_a", "col_b"]]
+y = df["y"]
+# 과정: X = 문제를 푸는 데 쓰는 특징(대괄호 2개). y = 맞혀야 할 정답(열 하나). 정답 열과 id 열은 X에 넣지 않는다.
 
-Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.2, random_state=42)
-# 문법: train_test_split(X, y, test_size=0.2) = 80% 학습 / 20% 테스트로 무작위 분할. 4개를 순서대로 돌려준다.
-# 문법: random_state=42 = 같은 결과가 나오게 고정. 지문에 값이 있으면 그 값.
+Xtr, Xte, ytr, yte, ids_train, ids_test = train_test_split(
+    X, y, df["soldier_id"], test_size=0.2, random_state=42
+)
+# 문법: train_test_split(X, y, id열, ...) = 세 배열을 같은 행 기준으로 한꺼번에 나눈다.
+# 과정: 돌아오는 6개의 순서: X 학습, X 테스트, y 학습, y 테스트, id 학습, id 테스트. 4개만 받으면 오류.
 
 clf = RandomForestClassifier(random_state=42).fit(Xtr, ytr)
-# 문법: 모델이름(옵션).fit(특징, 정답) = 학습. 학습 데이터만 넣는다.
-
+# 문법: 모델이름(옵션).fit(학습 특징, 학습 정답) = 학습. 학습 데이터만 넣는다.
 pred = clf.predict(Xte)
-# 문법: .predict(특징) = 예측값. 테스트 특징만 넣는다.
+# 문법: .predict(테스트 특징) = 예측값. 테스트 특징만 넣는다.
 
-res = df.loc[Xte.index, ["soldier_id"]].copy()
-# 문법: df.loc[행 이름들, 열들] = 이름으로 고르기. Xte.index = 테스트로 뽑힌 행 번호 → 그 행의 id만.
-# 문법: .copy() = 복사본. (경고 방지)
-res["actual"] = yte.values; res["pred"] = pred
-# 문법: .values = 인덱스 없이 값만. 인덱스가 어긋나 NaN 되는 것을 막는다.
+res = pd.DataFrame({"soldier_id": ids_test.values, "actual": yte.values, "pred": pred})
+# 문법: pd.DataFrame({"열 이름": 값들, ...}) = 사전으로 표를 만든다. .values = 인덱스 없이 값만(어긋남 방지).
 res.to_csv("결과.csv", index=False)
 
-print(accuracy_score(yte, pred)); print(confusion_matrix(yte, pred)); print(classification_report(yte, pred))
+print(accuracy_score(yte, pred))
+print(confusion_matrix(yte, pred))
+print(classification_report(yte, pred))
 # 문법: 평가함수(실제, 예측) 순서. 평가는 항상 "테스트 정답 vs 테스트 예측".
 ```
 
@@ -1067,10 +1090,10 @@ print(accuracy_score(yte, pred)); print(confusion_matrix(yte, pred)); print(clas
 | 코드 속 | 내 문제에서는 |
 |---|---|
 | `"status"` | 정답(분류할 범주) 열 (지문) |
-| `"적합"` | 1로 둘 값 (지문의 대응) |
-| `["feat_a", "feat_b"]` | 특징 열들. 정답 열과 id 열은 넣지 않는다 |
+| `"적합"` | 1로 둘 값 (지문의 대응). 지문이 정하지 않았으면 LabelEncoder |
+| `["col_a", "col_b"]` | 특징 열들. 정답 열과 id 열은 넣지 않는다 |
+| `df["soldier_id"]` | id 열 이름 (지문) |
 | `test_size, random_state` | 지문 값 (8:2면 0.2, 값이 없으면 42) |
-| `["soldier_id"]` | id 열 이름 (지문) |
 | `"actual", "pred"` | 지문이 정한 결과 열 이름 |
 | `"결과.csv"` | 지문이 정한 저장 파일 이름 |
 
@@ -1079,14 +1102,13 @@ print(accuracy_score(yte, pred)); print(confusion_matrix(yte, pred)); print(clas
 ```python
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 df = pd.read_csv("combat_ready.csv")
 df["status_enc"] = (df["status"] == "적합").astype(int)
 X = df[["pushup_count", "run_time_2km(sec)", "sprint_100m(sec)"]]; y = df["status_enc"]
-Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.2, random_state=42)
+Xtr, Xte, ytr, yte, ids_train, ids_test = train_test_split(X, y, df["soldier_id"], test_size=0.2, random_state=42)
 clf = RandomForestClassifier(random_state=42).fit(Xtr, ytr); pred = clf.predict(Xte)
-res = df.loc[Xte.index, ["soldier_id"]].copy(); res["actual"] = yte.values; res["pred"] = pred
+res = pd.DataFrame({"soldier_id": ids_test.values, "actual": yte.values, "pred": pred})
 res.to_csv("combat_ready_result.csv", index=False)
 print(accuracy_score(yte, pred)); print(confusion_matrix(yte, pred)); print(classification_report(yte, pred))
 ```
@@ -1210,19 +1232,31 @@ plt.savefig("life_plot.png"); plt.show(); plt.close()
 **③ 코드 설명 (줄마다 문법·과정)**
 
 ```python
-# 과정: 정답 글자 → 숫자 → 분할 → 학습 → 평가 → 예측값을 다시 글자로 → 저장
-le = LabelEncoder(); y = le.fit_transform(df["priority_level"])
-# 문법: 글자(A,B,C) 정답을 정수(0,1,2)로. 모델은 숫자 정답이 안전하다.
+# 과정: 정답 인코딩 → 분할(id 함께) → 학습 → 평가 → 예측을 글자로 되돌려 저장
+le = LabelEncoder()
+y = le.fit_transform(df["priority_level"])
+# 문법: LabelEncoder() = 글자를 정수로 바꾸는 도구. .fit_transform(열) = 값 종류를 배우고 바로 변환(A,B,C → 0,1,2, 가나다/알파벳 순).
+print(dict(zip(le.classes_, le.transform(le.classes_))))
+# 문법: le.classes_ = 배운 원래 값들. 무엇이 몇 번인지 꼭 확인한다.
+# 주의: le는 "이 정답 열"에 fit한 것이어야 한다. 앞 문제에서 만든 le가 남아 있으면 inverse_transform에서 unseen labels 오류가 난다.
+#       map({"A": 0, "B": 1, "C": 2})으로 인코딩했다면 le가 없으니 classification_report(..., target_names=["A","B","C"]), 되돌릴 때는 {0:"A",1:"B",2:"C"} 사전을 쓴다.
 
-m = GradientBoostingClassifier(random_state=42).fit(Xtr, ytr); p = m.predict(Xte)
-# 과정: RandomForest와 사용법이 똑같다(fit → predict). 3개 이상의 클래스도 그대로 된다.
+X = df[["feat_a", "feat_b"]]
+Xtr, Xte, ytr, yte, ids_train, ids_test = train_test_split(
+    X, y, df["weapon_id"], test_size=0.2, random_state=42
+)
+# 문법: 세 배열을 같은 행 기준으로 나눈다. 받는 변수 6개의 순서: X 학습/테스트, y 학습/테스트, id 학습/테스트.
+
+m = GradientBoostingClassifier(random_state=42).fit(Xtr, ytr)
+p = m.predict(Xte)
+# 과정: RandomForestClassifier와 사용법이 같다(fit → predict). 3개 이상의 클래스도 그대로 된다. 정규화는 필요 없다.
 
 print(classification_report(yte, p, target_names=le.classes_))
-# 문법: target_names=le.classes_ = 0,1,2 대신 A,B,C 이름으로 표시.
+print(confusion_matrix(yte, p))
+# 문법: target_names = 0,1,2 대신 A,B,C 이름으로 표시. 혼동행렬은 행 = 실제, 열 = 예측, 대각선 = 맞힌 개수.
 
-out = df.loc[Xte.index, ["weapon_id"]].copy()
-out["predicted"] = le.inverse_transform(p)
-# 문법: le.inverse_transform(숫자) = 정수를 원래 글자(A,B,C)로 되돌린다. 저장 파일엔 글자로 쓰는 것이 보통.
+out = pd.DataFrame({"weapon_id": ids_test.values, "predicted": le.inverse_transform(p)})
+# 문법: le.inverse_transform(숫자) = 정수를 원래 글자(A,B,C)로 되돌린다.
 out.to_csv("결과.csv", index=False)
 ```
 
@@ -1231,9 +1265,11 @@ out.to_csv("결과.csv", index=False)
 | 코드 속 | 내 문제에서는 |
 |---|---|
 | `"priority_level"` | 정답(클래스) 열 (지문) |
-| `["feat_a", ...]` | 특징 열들. 정답 열은 넣지 않는다 |
+| `["feat_a", "feat_b"]` | 특징 열들. 정답 열과 id 열은 넣지 않는다 |
+| `df["weapon_id"]` | id 열 이름 (지문) |
 | `GradientBoostingClassifier` | 지문이 정한 모델 (RandomForestClassifier도 같은 방식) |
-| `["weapon_id"]` | id 열 이름 (지문) |
+| `test_size, random_state` | 지문 값 |
+| `"predicted"` | 지문이 정한 예측 열 이름 |
 | `"결과.csv"` | 지문이 정한 저장 파일 이름 |
 
 **④ 코드**
@@ -1241,12 +1277,12 @@ out.to_csv("결과.csv", index=False)
 ```python
 from sklearn.ensemble import GradientBoostingClassifier
 df = pd.read_csv("maintenance_priority.csv")
-le = LabelEncoder(); y = le.fit_transform(df["priority_level"])
+le = LabelEncoder(); y = le.fit_transform(df["priority_level"])    # A,B,C → 0,1,2
 X = df[["age_years", "error_logs_per_month", "functional_score", "last_repair_months"]]
-Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.2, random_state=42)
+Xtr, Xte, ytr, yte, ids_train, ids_test = train_test_split(X, y, df["weapon_id"], test_size=0.2, random_state=42)
 m = GradientBoostingClassifier(random_state=42).fit(Xtr, ytr); p = m.predict(Xte)
 print(classification_report(yte, p, target_names=le.classes_)); print(confusion_matrix(yte, p))
-out = df.loc[Xte.index, ["weapon_id"]].copy(); out["predicted"] = le.inverse_transform(p)
+out = pd.DataFrame({"weapon_id": ids_test.values, "predicted": le.inverse_transform(p)})
 out.to_csv("priority_prediction.csv", index=False)
 ```
 
@@ -1276,9 +1312,11 @@ out.to_csv("priority_prediction.csv", index=False)
 
 **② 함수 정리 (PPT '활용 코드 정리')**
 
-- `KMeans(n_clusters=3)` — 군집화. 결과는 .labels_  
-  ↳ **언제**: 정답 없이 N개 그룹으로 묶을 때. 군집 수는 지문이 정한다. 먼저 표준화.
-- `PCA(n_components=2) / pca.components_` — 2차원 축소 / 축 구성 확인  
+- `StandardScaler().fit_transform()` — 표준화(평균 0, 표준편차 1)  
+  ↳ **언제**: 지문이 표준화를 말하거나 PCA를 할 때. 공식 문제 1(KMeans만)은 표준화 없이 바로 군집화했다.
+- `KMeans(n_clusters=3, random_state=42)` / `fit_predict()` — 군집화, 군집 번호를 한 번에  
+  ↳ **언제**: 정답 없이 N개 그룹으로 묶을 때. 군집 수는 지문이 정한다.
+- `PCA(n_components=2)` / `fit_transform()` / `pca.components_` — 2차원 축소 / 축 구성 확인  
   ↳ **언제**: 열이 많을 때 2차원으로 줄여 시각화. `components_`로 각 축에 어떤 열이 크게 기여하는지 해석.
 - `silhouette_score` — 군집 분리 정도(−1~1, 클수록 좋음)  
   ↳ **언제**: 군집이 잘 나뉘었는지 점수로 확인(1에 가까울수록 좋음).
@@ -1286,45 +1324,59 @@ out.to_csv("priority_prediction.csv", index=False)
 **③ 코드 설명 (줄마다 문법·과정)**
 
 ```python
-# 과정: 열 고르기 → 표준화 → KMeans → 군집 번호 붙이기 → 해석 → PCA 2차원 → 그래프
-feats = [c for c in df.columns if c != "soldier_id"]
-# 문법: [c for c in 열들 if 조건] = 조건에 맞는 것만 모은 리스트. 여기선 id를 뺀 모든 열.
+# 과정: 특징 고르기 → (필요하면) 표준화 → KMeans 군집화 → 군집별 평균·인원 → PCA 2차원 → 그림·저장
+features = df[["col_a", "col_b", "col_c"]]
+# 문법: 군집화에 쓸 열들만 고른다. id 열은 넣지 않는다. (id 열만 빼려면 df.drop(columns=["id_col"]))
 
-X = StandardScaler().fit_transform(df[feats])
-# 과정: 거리로 묶는 알고리즘(KMeans, PCA)은 열마다 크기가 다르면 편향되므로 먼저 표준화.
+scaler = StandardScaler()
+scaled_features = scaler.fit_transform(features)
+# 문법: StandardScaler() = 표준화 도구. .fit_transform(표) = 열마다 평균·표준편차를 배우고 바로 변환 → 결과는 숫자 배열.
+# 과정: 지문이 "표준화"를 말하거나 PCA가 있으면 한다. 공식 문제 1(KMeans만)은 표준화 없이 features를 바로 썼다.
 
-km = KMeans(n_clusters=3, random_state=42, n_init=10).fit(X)
-# 문법: KMeans(n_clusters=묶을 개수).fit(X) = 정답(y) 없이 X만 넣는다. 개수는 지문이 정한다.
-df["cluster"] = km.labels_
-# 문법: km.labels_ = 각 행이 속한 군집 번호(0,1,2).
+kmeans = KMeans(n_clusters=3, random_state=42)
+df["cluster"] = kmeans.fit_predict(scaled_features)
+# 문법: KMeans(n_clusters=묶을 개수, random_state=고정값) = 군집화 모델. .fit_predict(데이터) = 학습하고 각 행의 군집 번호(0,1,2)를 한 번에 돌려준다.
+# 과정: 표준화를 안 했으면 scaled_features 대신 features를 넣는다.
 
-print(silhouette_score(X, km.labels_))
-# 문법: 실루엣 점수(−1~1, 클수록 군집이 잘 나뉨).
-
-print(df.groupby("cluster")[feats].mean())
-# 과정: 군집별 평균을 보고 "이 군집은 ~가 높은 유형"이라고 해석한다.
 print(df["cluster"].value_counts().sort_index())
-# 문법: .value_counts() = 값별 개수. .sort_index() = 군집 번호 순으로 정렬.
+# 문법: .value_counts() = 값별 개수, .sort_index() = 군집 번호 순 정렬. 군집마다 몇 명인지.
 
-p = PCA(n_components=2).fit(X); Z = p.transform(X)
-# 문법: PCA(n_components=2).fit(X) = 2개 축을 찾는다. .transform(X) = 각 행을 2차원 좌표(Z)로.
-print(p.explained_variance_ratio_, p.components_)
-# 문법: explained_variance_ratio_ = 각 축이 설명하는 비율. components_ = 각 축에 각 열이 기여하는 정도.
+cluster_means = df.groupby("cluster")[["col_a", "col_b", "col_c"]].mean()
+# 문법: 군집별로 묶어 각 특징의 평균. 군집의 특성을 해석할 때 쓴다(열마다 어느 군집이 높은지 비교).
 
-plt.scatter(Z[:, 0], Z[:, 1], c=df["cluster"], cmap="viridis")
-# 문법: Z[:, 0] = 모든 행의 첫 번째 열(PC1), Z[:, 1] = PC2. c= 값에 따라 색을 칠한다.
-plt.xlabel("PC1"); plt.ylabel("PC2"); plt.savefig("pca.png"); plt.close()
+pca = PCA(n_components=2)
+pca_result = pca.fit_transform(scaled_features)
+# 문법: PCA(n_components=2) = 2차원으로 줄이는 도구. .fit_transform(데이터) = 변동이 큰 방향 2개를 찾고 각 행을 그 좌표로 바꾼다(배열, 열 2개).
+df["PC1"] = pca_result[:, 0]
+df["PC2"] = pca_result[:, 1]
+# 문법: pca_result[:, 0] = 모든 행의 첫 번째 열(PC1). 표["새 열"] = 값들 = 새 열로 붙인다.
+# 과정: 군집(cluster)과 PC1·PC2가 한 표에 있어야 산점도에서 hue="cluster"를 쓸 수 있다.
+# (PCA만 하는 문제) pca_df = pd.DataFrame(pca_result, columns=["PC1", "PC2"]); pca_df["id_col"] = df["id_col"]
+
+pca_components = pd.DataFrame(pca.components_, columns=features.columns, index=["PC1", "PC2"])
+# 문법: pca.components_ = 각 주성분을 이루는 원래 열의 가중치. 절댓값이 큰 열이 그 주성분을 대표, 부호가 반대면 반대 방향의 대조.
+
+plt.figure(figsize=(8, 6))
+sns.scatterplot(data=df, x="PC1", y="PC2", hue="cluster", palette="Set2")
+# 문법: hue="cluster" = 군집마다 색을 다르게. data 표 안에 cluster, PC1, PC2 열이 모두 있어야 한다.
+plt.title("2D PCA"); plt.xlabel("PC1"); plt.ylabel("PC2"); plt.legend(title="Cluster")
+plt.tight_layout(); plt.savefig("pca_plot.png"); plt.show(); plt.close()
+
+df.to_csv("clusters.csv", index=False)
 ```
 
 **바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
 
 | 코드 속 | 내 문제에서는 |
 |---|---|
-| `"soldier_id"` | 특징에서 뺄 id 열 (지문) |
+| `["col_a", "col_b", "col_c"]` | 군집화에 쓸 특징 열 (id 제외) |
+| `"id_col"` | 특징에서 뺄 id 열 (지문) |
 | `n_clusters=3` | 지문의 군집 수 |
 | `n_components=2` | 지문의 차원 수 |
 | `random_state=42` | 지문 값 (없으면 42) |
-| `"duty_clusters.csv", "duty_pca_plot.png"` | 지문이 정한 파일 이름 |
+| `scaled_features` | 표준화했으면 이것, 안 했으면 features |
+| `"cluster", "PC1", "PC2"` | 지문이 정한 열 이름 |
+| `"clusters.csv", "pca_plot.png"` | 지문이 정한 파일 이름 |
 
 **④ 코드**
 
@@ -1332,15 +1384,22 @@ plt.xlabel("PC1"); plt.ylabel("PC2"); plt.savefig("pca.png"); plt.close()
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import silhouette_score
-df = pd.read_csv("duty_pattern.csv"); feats = [c for c in df.columns if c != "soldier_id"]
-X = StandardScaler().fit_transform(df[feats])
-km = KMeans(n_clusters=3, random_state=42, n_init=10).fit(X); df["cluster"] = km.labels_
-print(silhouette_score(X, km.labels_)); print(df.groupby("cluster")[feats].mean())
+df = pd.read_csv("duty_pattern.csv")
+features = df.drop(columns=["soldier_id"])
+scaled_features = StandardScaler().fit_transform(features)
+kmeans = KMeans(n_clusters=3, random_state=42)
+df["cluster"] = kmeans.fit_predict(scaled_features)
 print(df["cluster"].value_counts().sort_index())
-p = PCA(n_components=2).fit(X); Z = p.transform(X); print(p.explained_variance_ratio_, p.components_)
-plt.scatter(Z[:, 0], Z[:, 1], c=df["cluster"], cmap="viridis"); plt.xlabel("PC1"); plt.ylabel("PC2")
-plt.savefig("duty_pca_plot.png"); plt.close(); df.to_csv("duty_clusters.csv", index=False)
+print(df.groupby("cluster")[list(features.columns)].mean())
+pca = PCA(n_components=2)
+pca_result = pca.fit_transform(scaled_features)
+df["PC1"] = pca_result[:, 0]; df["PC2"] = pca_result[:, 1]
+print(pd.DataFrame(pca.components_, columns=features.columns, index=["PC1", "PC2"]))
+plt.figure(figsize=(8, 6))
+sns.scatterplot(data=df, x="PC1", y="PC2", hue="cluster", palette="Set2")
+plt.title("2D PCA"); plt.legend(title="Cluster"); plt.tight_layout()
+plt.savefig("duty_pca_plot.png"); plt.show(); plt.close()
+df.to_csv("duty_clusters.csv", index=False)
 ```
 
 
@@ -1441,52 +1500,85 @@ print(b.loc[b["brightness"].idxmax(), "filename"])
 **③ 코드 설명 (줄마다 문법·과정)**
 
 ```python
-# 과정: 이미지마다 → 흑백 → 흐리게 → 윤곽선 → 윤곽 찾기 → 꼭짓점 4개인 것만 → 좌표 기록
-edges = cv2.Canny(cv2.GaussianBlur(gray, (5, 5), 0), 50, 150)
-# 문법: GaussianBlur(이미지, (5,5), 0) = 잡음 제거용 흐리게. Canny(이미지, 낮은기준, 높은기준) = 윤곽선(엣지)만 남기기.
+# 과정: 이미지마다 흑백 → 흐리게 → 윤곽선 → 윤곽 찾기 → 꼭짓점 4개인 것만 → 좌표 기록 → 표로 저장
+image_dir = "./images/blueprints/"
+image_files = ["BP001.png", "BP002.png", "BP003.png"]
+rectangle_data = []
+# 문법: 이미지 폴더·파일 이름 목록과, 사각형 정보를 한 줄씩 모아 둘 빈 리스트(for문 위에서 만든다).
 
-cnts, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-# 문법: findContours = 윤곽 목록(cnts)을 찾는다. 반환이 2개라 `_`는 안 쓰는 값. RETR_EXTERNAL = 가장 바깥 윤곽만.
+for image_name in image_files:
+    image_path = os.path.join(image_dir, image_name)
+    img = cv2.imread(image_path)
+    if img is None:
+        print(f"이미지 로드 실패: {image_path}")
+        continue
+    # 문법: 읽기에 실패하면 None. 알리고 건너뛴다. (경로가 틀려도 에러 없이 None이 나온다)
 
-n = 0
-for c in cnts:
-    # 문법: 윤곽 하나씩 반복.
-    ap = cv2.approxPolyDP(c, 0.02 * cv2.arcLength(c, True), True)
-    # 문법: arcLength(윤곽, True) = 둘레 길이. approxPolyDP(윤곽, 허용오차, 닫힌도형) = 꼭짓점이 적은 도형으로 단순화.
-    # 과정: 허용오차를 둘레의 2%로. 사각형이면 꼭짓점 4개로 단순화된다.
-    if len(ap) == 4 and cv2.isContourConvex(ap):
-        # 문법: len(ap) = 꼭짓점 수. isContourConvex = 오목하지 않은 도형인지. 둘 다 만족해야 사각형.
-        x, y, w, h = cv2.boundingRect(ap); n += 1
-        # 문법: boundingRect = 도형을 감싸는 사각형의 (왼쪽 위 x, y, 가로, 세로). n += 1 = 개수 세기.
-        rows.append({"filename": f, "x": x, "y": y, "width": w, "height": h})
-pd.DataFrame(rows).to_csv("rectangles.csv", index=False)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    edges = cv2.Canny(blurred, 50, 150)
+    # 문법: cvtColor = 흑백, GaussianBlur(이미지, (5,5), 0) = 잡음 제거용 흐리게, Canny(이미지, 50, 150) = 윤곽선만 남기기.
+
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # 문법: 함수가 값을 둘 돌려주니 쉼표로 받는다(contours, _). 점(.)이 아니라 쉼표. RETR_EXTERNAL = 가장 바깥 윤곽만.
+
+    rectangle_count = 0
+    for cnt in contours:
+        approx = cv2.approxPolyDP(cnt, 0.02 * cv2.arcLength(cnt, True), True)
+        # 문법: arcLength = 둘레 길이. approxPolyDP(윤곽, 허용오차, True) = 꼭짓점이 적은 도형으로 단순화(둘레의 2%).
+        if len(approx) == 4 and cv2.isContourConvex(approx):
+            # 문법: 꼭짓점이 4개이고(len(approx) == 4) 볼록한 도형일 때만 사각형. 이 조건이 없으면 모든 윤곽이 잡혀 rect가 너무 많이 나온다.
+            x, y, w, h = cv2.boundingRect(approx)
+            # 문법: boundingRect = 도형을 감싸는 사각형의 왼쪽 위 좌표(x, y)와 가로(w), 세로(h).
+            rectangle_count += 1
+            rectangle_data.append({
+                "filename": image_name, "x": x, "y": y,
+                "width": w, "height": h, "rectangle_count": rectangle_count
+            })
+            # 문법: {"열 이름": 값, ...} = 사각형 하나의 기록을 리스트에 추가.
+
+    if rectangle_count == 0:
+        rectangle_data.append({"filename": image_name, "x": None, "y": None,
+                               "width": None, "height": None, "rectangle_count": 0})
+    # 과정: 사각형이 하나도 없는 이미지도 한 줄(좌표는 None)로 남긴다.
+
+df = pd.DataFrame(rectangle_data)
+df.to_csv("rectangles.csv", index=False)
+# 문법: for문이 끝난 뒤 한 번에 표로 만들어 저장한다.
 ```
 
 **바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
 
 | 코드 속 | 내 문제에서는 |
 |---|---|
-| `image_dir, image_files` | 이미지 폴더와 파일 목록 (지문) |
+| `image_dir, image_files` | 이미지 폴더와 파일 이름 목록 (지금 환경의 실제 경로) |
 | `(5, 5), 50, 150` | 지문이 정했으면 그 값 (예시 노트북은 이 값) |
-| `"x", "y", "width", "height"` | 지문이 정한 열 이름 |
+| `len(approx) == 4` | 사각형이면 4. 지문의 도형 조건 |
+| `"filename", "x", "y", "width", "height", "rectangle_count"` | 지문이 정한 열 이름 |
 | `"rectangles.csv"` | 지문이 정한 저장 파일 이름 |
 
 **④ 코드**
 
 ```python
-rows = []
-for f in sorted(os.listdir("images/blueprints")):
-    img = cv2.imread(f"images/blueprints/{f}"); gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+image_dir = "./images/blueprints/"
+image_files = ["BP001.png", "BP002.png", "BP003.png"]
+rectangle_data = []
+for image_name in image_files:
+    img = cv2.imread(os.path.join(image_dir, image_name))
+    if img is None:
+        print("이미지 로드 실패:", image_name); continue
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(cv2.GaussianBlur(gray, (5, 5), 0), 50, 150)
-    cnts, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    n = 0
-    for c in cnts:
-        ap = cv2.approxPolyDP(c, 0.02 * cv2.arcLength(c, True), True)
-        if len(ap) == 4 and cv2.isContourConvex(ap):
-            x, y, w, h = cv2.boundingRect(ap); n += 1
-            rows.append({"filename": f, "x": x, "y": y, "width": w, "height": h})
-    print(f, "사각형 수:", n)
-pd.DataFrame(rows).to_csv("rectangles.csv", index=False)
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    rectangle_count = 0
+    for cnt in contours:
+        approx = cv2.approxPolyDP(cnt, 0.02 * cv2.arcLength(cnt, True), True)
+        if len(approx) == 4 and cv2.isContourConvex(approx):
+            x, y, w, h = cv2.boundingRect(approx); rectangle_count += 1
+            rectangle_data.append({"filename": image_name, "x": x, "y": y, "width": w, "height": h, "rectangle_count": rectangle_count})
+    if rectangle_count == 0:
+        rectangle_data.append({"filename": image_name, "x": None, "y": None, "width": None, "height": None, "rectangle_count": 0})
+pd.DataFrame(rectangle_data).to_csv("rectangles.csv", index=False)
 ```
 
 ### 09-3. 객체 탐지(YOLO)와 좌표 저장  
@@ -1507,24 +1599,42 @@ pd.DataFrame(rows).to_csv("rectangles.csv", index=False)
 **③ 코드 설명 (줄마다 문법·과정)**
 
 ```python
-# 과정: YOLO 모델 불러오기 → 이미지마다 탐지 → 결과 표의 행을 한 줄씩 기록 → 저장 → 개수 세기
-model = torch.hub.load("ultralytics/yolov5", "yolov5s", pretrained=True)
-# 문법: torch.hub.load(저장소, 모델이름) = 사전학습 YOLO 불러오기. 처음엔 인터넷이 필요.
+# 과정: YOLO 모델 불러오기 → 이미지마다 열기·탐지 → 클래스·좌표를 한 줄씩 기록 → 표로 저장 → 개수 출력
+model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+# 문법: torch.hub.load(저장소, 모델 이름, pretrained=True) = 이미 학습된 YOLOv5 작은 모델. for문 위에서 한 번만 불러온다. 처음엔 인터넷으로 내려받는다.
 
-img = cv2.imread(경로)[:, :, ::-1]
-# 문법: [:, :, ::-1] = 색 채널 순서를 뒤집는다(BGR → RGB). 모델은 RGB를 기대.
+image_dir = './images/surv_imgs/'
+image_files = ['CAM001.png', 'CAM002.png', 'CAM003.png']
+detections = []
+person_count = 0
+vehicle_count = 0
+# 주의: 모아 두는 리스트 이름(detections)과 탐지 결과(results)를 다르게 쓴다. 같은 이름이면 results.append에서 'Detections' object has no attribute 'append' 오류.
 
-d = model(img).pandas().xyxy[0]
-# 문법: model(이미지) = 탐지 실행. .pandas().xyxy[0] = 결과를 표로(xmin,ymin,xmax,ymax,confidence,class,name).
+for file_name in image_files:
+    img = Image.open(os.path.join(image_dir, file_name))
+    # 문법: PIL의 Image.open(경로) = 이미지를 연다(RGB). cv2.imread로 읽었다면 모델에 넣기 전 cv2.cvtColor(img, cv2.COLOR_BGR2RGB).
+    results = model(img)
+    # 문법: model(이미지) = 객체 탐지 실행. 결과(results)에서 클래스·좌표를 꺼낸다.
 
-for _, r in d.iterrows():
-    # 문법: .iterrows() = 표를 한 행씩. (행 번호, 행) 중 번호는 안 쓰므로 `_`.
-    rows.append({"filename": f, "class": r["name"], "x1": r.xmin, "y1": r.ymin, "x2": r.xmax, "y2": r.ymax})
-    # 과정: 지문이 정한 열 이름(x1,y1,x2,y2)으로 바꿔 담는다.
+    for *box, conf, cls in results.xyxy[0].tolist():
+        # 문법: results.xyxy[0] = 탐지된 객체들(행마다 x1,y1,x2,y2,신뢰도,클래스 번호). *box는 앞의 좌표 4개를 묶어 받는다.
+        x1, y1, x2, y2 = map(int, box)
+        class_name = results.names[int(cls)]
+        # 문법: map(int, box) = 좌표를 정수로. results.names = 클래스 번호별 이름 사전.
+        if class_name in ['person']:
+            person_count += 1
+        elif class_name in ['car', 'truck', 'bus']:
+            vehicle_count += 1
+        else:
+            continue
+        # 과정: 사람/차량만 남기고 그 밖의 클래스는 건너뛴다(continue).
+        detections.append({"filename": file_name, "class": class_name,
+                           "x1": x1, "y1": y1, "x2": x2, "y2": y2})
 
-det = pd.DataFrame(rows); det.to_csv("detections.csv", index=False)
-print((det["class"] == "person").sum(), det["class"].isin(["car", "truck", "bus"]).sum())
-# 문법: (열 == 값).sum() = 개수. .isin([여러 값]) = 목록에 있는 것이면 True.
+df = pd.DataFrame(detections)
+df.to_csv("detections.csv", index=False)
+print(f"탐지된 사람 수: {person_count}")
+print(f"탐지된 차량 수: {vehicle_count}")
 ```
 
 **바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
@@ -1532,24 +1642,32 @@ print((det["class"] == "person").sum(), det["class"].isin(["car", "truck", "bus"
 | 코드 속 | 내 문제에서는 |
 |---|---|
 | `'yolov5s'` | 지문이 정한 모델 이름 |
-| `이미지 경로` | 지문의 이미지 폴더 (예: ./images/surv_imgs/) |
-| `['person'], ['car', 'truck', 'bus']` | 지문이 세라는 클래스 이름 (사람/차량 등) |
-| `"x1", "y1", "x2", "y2"` | 지문이 정한 열 이름 |
+| `image_dir, image_files` | 이미지 폴더·파일 이름 (지금 환경의 실제 경로) |
+| `['person'], ['car', 'truck', 'bus']` | 지문이 세라는 클래스 이름 |
+| `"filename", "class", "x1"...` | 지문이 정한 열 이름 |
 | `"detections.csv"` | 지문이 정한 저장 파일 이름 |
 
 **④ 코드**
 
 ```python
 import torch
-model = torch.hub.load("ultralytics/yolov5", "yolov5s", pretrained=True)
-rows = []
-for f in sorted(os.listdir("images/surv_imgs")):
-    img = cv2.imread(f"images/surv_imgs/{f}")[:, :, ::-1]
-    d = model(img).pandas().xyxy[0]
-    for _, r in d.iterrows():
-        rows.append({"filename": f, "class": r["name"], "x1": r.xmin, "y1": r.ymin, "x2": r.xmax, "y2": r.ymax})
-det = pd.DataFrame(rows); det.to_csv("detections.csv", index=False)
-print((det["class"] == "person").sum(), det["class"].isin(["car", "truck", "bus"]).sum())
+from PIL import Image
+model = torch.hub.load("ultralytics/yolov5", "yolov5s", pretrained=True)   # 인터넷 필요
+image_dir = "./images/surv_imgs/"
+image_files = ["CAM001.png", "CAM002.png", "CAM003.png"]
+detections = []; person_count = 0; vehicle_count = 0
+for file_name in image_files:
+    img = Image.open(os.path.join(image_dir, file_name))
+    results = model(img)
+    for *box, conf, cls in results.xyxy[0].tolist():
+        x1, y1, x2, y2 = map(int, box)
+        class_name = results.names[int(cls)]
+        if class_name in ["person"]: person_count += 1
+        elif class_name in ["car", "truck", "bus"]: vehicle_count += 1
+        else: continue
+        detections.append({"filename": file_name, "class": class_name, "x1": x1, "y1": y1, "x2": x2, "y2": y2})
+df = pd.DataFrame(detections); df.to_csv("detections.csv", index=False)
+print(f"탐지된 사람 수: {person_count}"); print(f"탐지된 차량 수: {vehicle_count}")
 ```
 
 > **언제 쓰나**: `torch.hub.load`가 안 될 때. `pip install ultralytics` 후 `YOLO('yolov8n.pt')`. 가장 작은 모델(n)이 CPU에서 빠름.
@@ -1615,38 +1733,64 @@ print(model.names)                      # {0: 'person', 2: 'car', 7: 'truck', ..
 **③ 코드 설명 (줄마다 문법·과정)**
 
 ```python
-# 과정: 클래스 이름 목록 → 빈도 세기 → 표로 정렬해 저장 → 상위 3개 막대그래프
-cnt = Counter(det["class"])
-# 문법: Counter(목록) = 값별 개수를 센 사전 형태. (from collections import Counter)
+# 과정: 모델 불러오기 → 이미지 목록 → 이미지마다 클래스 이름 목록 → Counter로 누적 → 표로 저장 → 상위 3개 막대그래프
+img_files = [f for f in os.listdir(img_dir) if f.lower().endswith(('.jpg', '.png', '.jpeg'))]
+# 문법: os.listdir(폴더) = 폴더 안 파일 이름들. [f for f in 목록 if 조건] = 조건에 맞는 것만 모은 리스트.
+#   f.lower().endswith(튜플) = 소문자로 바꿔서 그 확장자 중 하나로 끝나는지 확인한다. (endswith, 확장자 앞의 점 주의)
 
-pd.DataFrame(cnt.items(), columns=["class", "count"]).sort_values("count", ascending=False).to_csv("object_count.csv", index=False)
-# 문법: cnt.items() = (이름, 개수) 쌍들. columns=로 열 이름 지정. sort_values(열, ascending=False) = 내림차순.
+total_counter = Counter()
+# 문법: Counter() = 값별 개수를 세는 도구. for문 위에서 빈 상태로 만든다.
 
-top3 = cnt.most_common(3)
-# 문법: .most_common(N) = 개수가 많은 순서로 (이름, 개수) 상위 N개 리스트.
+for img_file in img_files:
+    img = Image.open(os.path.join(img_dir, img_file))
+    results = model(img)
+    preds = results.pandas().xyxy[0]['name'].tolist()
+    # 문법: results.pandas().xyxy[0] = 탐지 결과 표. ['name'] = 클래스 이름 열. .tolist() = 리스트. 예: ['person', 'person', 'car']
+    total_counter.update(preds)
+    # 문법: .update(리스트) = 리스트의 값들을 개수에 더한다. 이미지마다 한 번씩 실행해 누적한다.
 
-plt.bar([k for k, _ in top3], [v for _, v in top3])
-# 문법: plt.bar(이름들, 값들) = 막대그래프. 컴프리헨션으로 이름 목록(k)과 개수 목록(v)을 따로 뽑는다.
-plt.title("Top3 objects"); plt.savefig("top3_objects.png"); plt.close()
+df = pd.DataFrame(total_counter.items(), columns=["object_class", "count"])
+df = df.sort_values(by="count", ascending=False)
+df.to_csv("object_count.csv", index=False)
+# 문법: total_counter.items() = (클래스 이름, 개수) 쌍들. sort_values(by=열, ascending=False) = 개수 많은 순.
+
+top3 = df.head(3)
+plt.figure(figsize=(8, 5))
+plt.bar(top3["object_class"], top3["count"])
+# 문법: df.head(3) = 앞 3줄(정렬되어 있어야 상위 3개). plt.bar(x, y) = 막대그래프.
+plt.title("Top 3 Detected Objects"); plt.xlabel("Object Class"); plt.ylabel("Frequency")
+plt.tight_layout(); plt.savefig("top3_objects.png"); plt.show(); plt.close()
 ```
 
 **바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
 
 | 코드 속 | 내 문제에서는 |
 |---|---|
-| `det["class"]` | 클래스 이름이 들어 있는 열 (탐지 결과 표) |
-| `"class", "count"` | 지문이 정한 열 이름 |
-| `most_common(3)` | 지문의 상위 개수 (예: 3) |
+| `img_dir` | 이미지 폴더 경로 (끝에 /) |
+| `('.jpg', '.png', '.jpeg')` | 지문의 이미지 확장자들 |
+| `"object_class", "count"` | 지문이 정한 열 이름 |
+| `head(3)` | 지문의 상위 개수 |
 | `"object_count.csv", "top3_objects.png"` | 지문이 정한 파일 이름 |
 
 **④ 코드**
 
 ```python
+import os, torch
 from collections import Counter
-cnt = Counter(det["class"])
-pd.DataFrame(cnt.items(), columns=["class", "count"]).sort_values("count", ascending=False).to_csv("object_count.csv", index=False)
-top3 = cnt.most_common(3)
-plt.bar([k for k, _ in top3], [v for _, v in top3]); plt.title("Top3 objects"); plt.savefig("top3_objects.png"); plt.close()
+from PIL import Image
+model = torch.hub.load("ultralytics/yolov5", "yolov5s", pretrained=True)
+img_dir = "./images/surv_imgs/"
+img_files = [f for f in os.listdir(img_dir) if f.lower().endswith((".jpg", ".png", ".jpeg"))]
+total_counter = Counter()
+for img_file in img_files:
+    results = model(Image.open(os.path.join(img_dir, img_file)))
+    total_counter.update(results.pandas().xyxy[0]["name"].tolist())
+df = pd.DataFrame(total_counter.items(), columns=["object_class", "count"]).sort_values(by="count", ascending=False)
+df.to_csv("object_count.csv", index=False)
+top3 = df.head(3)
+plt.figure(figsize=(8, 5)); plt.bar(top3["object_class"], top3["count"])
+plt.title("Top 3 Detected Objects"); plt.xlabel("Object Class"); plt.ylabel("Frequency")
+plt.tight_layout(); plt.savefig("top3_objects.png"); plt.show(); plt.close()
 ```
 
 ### 10-2. 이미지 속 글자(OCR)  
@@ -1666,41 +1810,58 @@ plt.bar([k for k, _ in top3], [v for _, v in top3]); plt.title("Top3 objects"); 
 **③ 코드 설명 (줄마다 문법·과정)**
 
 ```python
-# 과정: OCR 모델 만들기 → 이미지마다 글자 읽기 → 조건에 맞는 글자만 → 표로 저장
-reader = easyocr.Reader(["ko", "en"], gpu=False)
-# 문법: easyocr.Reader(언어 목록, gpu=False) = 한글+영어 인식 모델. 첫 실행 때 모델을 내려받아 오래 걸린다.
+# 과정: OCR 모델 만들기 → 이미지마다 글자 읽기 → 공백·빈 글자 정리 → 정규식으로 걸러 기록 → 표로 저장
+import easyocr, re
+reader = easyocr.Reader(['ko', 'en'])
+# 문법: easyocr.Reader(언어 목록) = 글자 인식 모델. 'ko' 한글, 'en' 영어(숫자도 읽힌다). for문 위에서 한 번만 만든다. 처음엔 모델을 내려받아 오래 걸린다.
 
-for bbox, text, conf in reader.readtext(경로):
-    # 문법: .readtext(이미지경로) = [(글자 위치, 글자, 신뢰도), ...]. for에서 3개를 한 번에 풀어 받는다.
-    if re.match(r"^[가-힣A-Za-z0-9\s]+$", text):
-        # 문법: re.match(패턴, 글자) = 패턴에 맞으면 결과, 아니면 None(False).
-        # 문법: ^ 시작, $ 끝, [가-힣A-Za-z0-9\s] = 한글·영문·숫자·공백 중 하나, + = 1개 이상.
-        # 과정: 처음부터 끝까지 전부 허용 글자로만 이루어진 것만 통과(특수문자가 섞이면 제외).
-        rows.append({"filename": f, "text": text, "conf": round(conf, 3)})
-pd.DataFrame(rows).to_csv("supply_info.csv", index=False)
+image_dir = './images/supplies_imgs/'
+image_files = ['BOX001.png', 'BOX002.png', 'BOX003.png']
+results = []
+# 문법: 결과를 한 줄씩 모아 둘 빈 리스트. (이 문제는 탐지 결과 객체가 없어 results 이름을 써도 된다)
+
+for file_name in image_files:
+    img = os.path.join(image_dir, file_name)
+    result = reader.readtext(img, detail=0)
+    # 문법: reader.readtext(경로, detail=0) = 이미지 속 글자를 문자열 리스트로. detail=0 = 글자만(좌표·신뢰도 제외).
+    lines = [line.strip() for line in result if line.strip()]
+    # 문법: line.strip() = 앞뒤 공백 제거. if line.strip() = 지운 뒤 빈 글자가 아닌 것만 남긴다.
+    for line in lines:
+        match = re.match(r"([가-힣a-zA-Z0-9]+)", line)
+        # 문법: re.match(패턴, 글자) = 글자가 패턴으로 시작하면 결과, 아니면 None. [가-힣a-zA-Z0-9]+ = 한글·영문·숫자 1개 이상. (import re 필요)
+        if match:
+            results.append({"filename": img, "item": line})
+
+df = pd.DataFrame(results)
+df.to_csv("supply_info.csv", index=False)
 ```
 
 **바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
 
 | 코드 속 | 내 문제에서는 |
 |---|---|
-| `["ko", "en"]` | 읽을 언어 (지문) |
-| `"images/supplies_imgs"` | 이미지 폴더 (지문) |
-| `정규식 패턴` | 남길 글자 조건 (지문이 한글·영문·숫자만이면 예시 그대로) |
-| `"filename", "text"` | 지문이 정한 열 이름 |
+| `['ko', 'en']` | 읽을 언어 (지문). 숫자는 en에 포함 |
+| `image_dir, image_files` | 이미지 폴더·파일 이름 (실제 경로, 파일 이름은 os.listdir로 확인) |
+| `re.match(...) 패턴` | 남길 글자 조건 (지문이 한글·영문·숫자만이면 그대로) |
+| `"filename", "item"` | 지문이 정한 열 이름 (파일 이름만 넣으려면 file_name) |
 | `"supply_info.csv"` | 지문이 정한 저장 파일 이름 |
 
 **④ 코드**
 
 ```python
 import easyocr, re
-reader = easyocr.Reader(["ko", "en"], gpu=False)
-rows = []
-for f in sorted(os.listdir("images/supplies_imgs")):
-    for bbox, text, conf in reader.readtext(f"images/supplies_imgs/{f}"):
-        if re.match(r"^[가-힣A-Za-z0-9\s]+$", text):
-            rows.append({"filename": f, "text": text, "conf": round(conf, 3)})
-pd.DataFrame(rows).to_csv("supply_info.csv", index=False)
+reader = easyocr.Reader(["ko", "en"])
+image_dir = "./images/supplies_imgs/"
+image_files = ["BOX001.png", "BOX002.png", "BOX003.png"]
+results = []
+for file_name in image_files:
+    img = os.path.join(image_dir, file_name)
+    result = reader.readtext(img, detail=0)
+    lines = [line.strip() for line in result if line.strip()]
+    for line in lines:
+        if re.match(r"([가-힣a-zA-Z0-9]+)", line):
+            results.append({"filename": img, "item": line})
+pd.DataFrame(results).to_csv("supply_info.csv", index=False)
 ```
 
 ### 10-3. 드론 영상 프레임 탐지  
@@ -1720,52 +1881,91 @@ pd.DataFrame(rows).to_csv("supply_info.csv", index=False)
 **③ 코드 설명 (줄마다 문법·과정)**
 
 ```python
-# 과정: 영상 열기 → 초당 프레임 수 → 한 프레임씩 읽기 → 1초마다 하나만 저장
-cap = cv2.VideoCapture("영상.mp4")
-# 문법: VideoCapture(경로) = 영상을 열어 프레임을 읽을 수 있게 한다.
-assert cap.isOpened(), "영상을 열 수 없음"
-# 문법: assert 조건, 메시지 = 조건이 거짓이면 오류로 멈춘다. isOpened() = 잘 열렸는지.
+# 과정: 모델·영상 준비 → 프레임을 하나씩 읽기 → 1초마다 YOLO 탐지·기록 → 표로 저장 → 프레임별 개수 그래프
+model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+cap = cv2.VideoCapture('./videos/drone_mission.mp4')
+# 문법: cv2.VideoCapture(경로) = 영상을 열어 프레임을 읽을 수 있게 한다.
+fps = cap.get(cv2.CAP_PROP_FPS)
+frame_interval = int(fps)
+# 문법: cap.get(cv2.CAP_PROP_FPS) = 초당 프레임 수. int(...) = 정수. FPS가 30이면 30프레임마다 한 장 = 1초 간격.
 
-fps = int(round(cap.get(cv2.CAP_PROP_FPS))) or 30
-# 문법: cap.get(CAP_PROP_FPS) = 초당 프레임 수. round → int로 정수. `or 30` = 0이면 30으로.
+results_list = []
+frame_num = 0
+# 문법: 결과 리스트와, 지금 몇 번째 프레임인지 세는 변수(0에서 시작).
+# 주의: while문은 하나만 쓴다. cap은 한 번 끝까지 읽으면 다시 읽을 수 없어서, 앞에서 영상을 다 읽은 while이 있으면 결과가 비게 된다(다시 읽으려면 cap을 새로 연다).
 
-i, frames = 0, []
-# 문법: i는 프레임 번호, frames는 저장할 프레임 목록.
-while True:
-    # 문법: while True = 멈추라고 할 때까지 반복.
-    ok, frame = cap.read()
-    # 문법: .read() = 다음 프레임 한 장. ok = 읽기 성공 여부, frame = 이미지.
-    if not ok: break
-    # 과정: 영상이 끝나면 ok가 False → 반복 종료.
-    if i % fps == 0: frames.append((i, frame))
-    # 문법: i % fps = 나머지. 0이면 fps 프레임마다 한 번 = 1초 간격. (번호, 이미지) 쌍으로 저장.
-    i += 1
+while cap.isOpened():
+    # 문법: 영상이 열려 있는 동안 아래를 계속 반복한다.
+    ret, frame = cap.read()
+    # 문법: cap.read() = 다음 프레임 한 장. ret = 읽기 성공 여부, frame = 이미지.
+    if not ret:
+        break
+    # 문법: 읽기에 실패하면(영상 끝) 반복을 멈춘다.
+
+    if frame_num % frame_interval == 0:
+        # 문법: % = 나머지. 0이면 frame_interval 프레임마다 한 번 = 1초마다.
+        results = model(frame)
+        df = results.pandas().xyxy[0]
+        # 문법: 이 프레임의 탐지 결과를 표로. 열: xmin, ymin, xmax, ymax, confidence, class, name.
+        for _, row in df.iterrows():
+            # 문법: .iterrows() = 표를 한 행씩. (행 번호, 행)에서 번호는 안 쓰므로 _로 받는다.
+            results_list.append({
+                "frame_number": frame_num, "class": row["name"],
+                "x1": int(row["xmin"]), "y1": int(row["ymin"]),
+                "x2": int(row["xmax"]), "y2": int(row["ymax"])
+            })
+    frame_num += 1
+    # 문법: 프레임 번호를 1 늘린다. 이 줄이 빠지면 무한 반복.
+
 cap.release()
-# 문법: 영상 닫기. 이후 frames의 각 이미지에 YOLO를 적용해 결과를 저장한다.
+# 문법: 영상을 닫는다. while이 끝난 뒤에 쓴다. (빼도 결과에는 영향 없음)
+
+df_result = pd.DataFrame(results_list)
+df_result.to_csv("drone_detection.csv", index=False)
+# 과정: 표 이름은 while 안의 df와 겹치지 않게 df_result로.
+
+frame_series = df_result["frame_number"].value_counts().sort_index()
+# 문법: 프레임 번호별 행 수 = 그 프레임에서 탐지된 객체 수. 시간 순서로 정렬.
+# 과정: 탐지가 0개인 프레임을 0으로 포함하라는 지문이면 frame_series.reindex(range(0, frame_num, frame_interval), fill_value=0).
+plt.figure(figsize=(10, 5))
+frame_series.plot(marker='o')
+# 문법: Series.plot(marker='o') = 선 그래프. x축 = 프레임 번호, y축 = 탐지된 객체 수.
+plt.title("YOLO Detections per Frame (1s Interval)"); plt.xlabel("Frame Number"); plt.ylabel("Number of Detections"); plt.grid(True)
+plt.tight_layout(); plt.savefig("detection_over_time.png"); plt.show(); plt.close()
 ```
 
 **바꿔야 하는 부분 (코드 속 → 내 문제에서는)**
 
 | 코드 속 | 내 문제에서는 |
 |---|---|
-| `"영상.mp4"` | 영상 파일 경로 (지문) |
-| `fps` | 1초 간격이면 그대로. 지문이 다른 간격이면 i % 간격 == 0 |
-| `frame_number, class, x1, y1, x2, y2` | 지문이 정한 열 이름 |
-| `저장 파일 이름` | 지문이 정한 이름 |
+| `'./videos/drone_mission.mp4'` | 영상 파일 경로 (지문) |
+| `frame_interval` | 1초 간격이면 int(fps) 그대로. 다른 간격이면 지문대로 |
+| `'yolov5s'` | 지문이 정한 모델 이름 |
+| `"frame_number", "class", "x1"...` | 지문이 정한 열 이름 |
+| `"drone_detection.csv", "detection_over_time.png"` | 지문이 정한 파일 이름 |
 
 **④ 코드**
 
 ```python
-cap = cv2.VideoCapture("videos/drone_mission.mp4")
-assert cap.isOpened(), "영상을 열 수 없음"
-fps = int(round(cap.get(cv2.CAP_PROP_FPS))) or 30
-i, frames = 0, []
-while True:
-    ok, frame = cap.read()
-    if not ok: break
-    if i % fps == 0: frames.append((i, frame))
-    i += 1
-cap.release(); print(len(frames), "프레임 추출")
+import cv2, torch
+model = torch.hub.load("ultralytics/yolov5", "yolov5s", pretrained=True)
+cap = cv2.VideoCapture("./videos/drone_mission.mp4")
+fps = cap.get(cv2.CAP_PROP_FPS); frame_interval = int(fps)
+results_list = []; frame_num = 0
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret: break
+    if frame_num % frame_interval == 0:
+        df = model(frame).pandas().xyxy[0]
+        for _, row in df.iterrows():
+            results_list.append({"frame_number": frame_num, "class": row["name"], "x1": int(row["xmin"]), "y1": int(row["ymin"]), "x2": int(row["xmax"]), "y2": int(row["ymax"])})
+    frame_num += 1
+cap.release()
+df_result = pd.DataFrame(results_list); df_result.to_csv("drone_detection.csv", index=False)
+frame_series = df_result["frame_number"].value_counts().sort_index()
+plt.figure(figsize=(10, 5)); frame_series.plot(marker="o")
+plt.title("YOLO Detections per Frame (1s Interval)"); plt.xlabel("Frame Number"); plt.ylabel("Number of Detections"); plt.grid(True)
+plt.tight_layout(); plt.savefig("detection_over_time.png"); plt.show(); plt.close()
 ```
 
 
@@ -1805,6 +2005,7 @@ def read_csv_auto(path, **kw):
 **그래프의 한글**
 - 서버에 한글 폰트가 없으면 제목·축 이름이 □로 깨집니다. **제목과 축 이름은 영어로** 쓰는 것이 안전합니다.
 - 마이너스 부호가 깨지면 `plt.rcParams["axes.unicode_minus"] = False`.
+- **Colab에서 한글을 쓰려면**(공식 노트북 방식): 셀에 `!sudo apt-get install -y fonts-nanum`, `!sudo fc-cache -fv`, `!rm ~/.cache/matplotlib -rf`를 실행하고, 그래도 `findfont: Font family 'NanumGothic' not found`가 나오면 **런타임 → 세션 다시 시작** 후 `plt.rcParams['font.family'] = 'NanumGothic'`. 시험 서버는 설치가 안 될 수 있으니 영어 제목이 안전합니다.
 - 한글 폰트가 필요하면(있을 때만): `plt.rcParams["font.family"] = "NanumGothic"` (윈도우는 `"Malgun Gothic"`). 폰트 확인: `from matplotlib import font_manager as fm; [f.name for f in fm.fontManager.ttflist if "Nanum" in f.name or "Malgun" in f.name]`
 
 
@@ -1840,4 +2041,12 @@ df = pd.read_csv("data.csv")            # 한글 깨지면 encoding="cp949"
 df.head(); df.info(); df.describe(); df.isna().sum(); df.shape
 df.to_csv("result.csv", index=False)    # index=False 필수
 os.makedirs("plots", exist_ok=True)
+```
+
+**이미지 폴더의 파일 목록(이미지가 많을 때)**
+
+```python
+img_files = [f for f in os.listdir(img_dir) if f.lower().endswith(('.jpg', '.png', '.jpeg'))]
+# 문법: os.listdir(폴더) = 폴더 안 파일 이름들. [f for f in 목록 if 조건] = 조건에 맞는 것만 모은 리스트.
+#   f.lower().endswith(튜플) = 소문자로 바꿔서 그 확장자 중 하나로 끝나는지 확인 (endswith, 확장자 앞의 점 주의)
 ```
